@@ -108,6 +108,9 @@ export interface Settings {
   disableAutoUpdate?: boolean;
 
   memoryDiscoveryMaxDirs?: number;
+  
+  // AI provider selection
+  selectedProvider?: string;
 }
 
 export interface SettingsError {

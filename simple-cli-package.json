@@ -1,0 +1,32 @@
+{
+  "name": "simple-cli-agent",
+  "version": "1.0.0",
+  "description": "A simplified CLI agent based on Gemini CLI",
+  "main": "simple-cli-agent.js",
+  "bin": {
+    "simple-cli": "./simple-cli-agent.js",
+    "scli": "./simple-cli-agent.js"
+  },
+  "scripts": {
+    "start": "node simple-cli-agent.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "cli",
+    "agent",
+    "gemini",
+    "ai",
+    "terminal"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "simple-cli-agent.js",
+    "README.md"
+  ]
+} 

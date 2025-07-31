@@ -16,10 +16,12 @@ An enhanced command-line interface built on top of Gemini CLI, providing powerfu
 ## 📦 Installation
 
 ### Prerequisites
-- Node.js 20+ 
+
+- Node.js 20+
 - npm or yarn
 
 ### Global Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/involvex/notabot-cli.git
@@ -39,6 +41,7 @@ notabot-full --help
 ```
 
 ### Alternative: Direct Installation
+
 ```bash
 npm install -g https://github.com/involvex/notabot-cli.git
 ```
@@ -59,6 +62,7 @@ notabot-full --help
 ## 🛠️ Available Commands
 
 ### Core Commands
+
 - `/help` - Show available commands
 - `/about` - Display CLI information
 - `/auth` - Authentication management
@@ -66,6 +70,7 @@ notabot-full --help
 - `/quit` - Exit the CLI
 
 ### Enhanced Commands
+
 - `/cd` - Change directory with smart suggestions
 - `/git` - Git workflow integration
 - `/server` - Web server management
@@ -74,6 +79,7 @@ notabot-full --help
 - `/yolo` - Quick actions and shortcuts
 
 ### Theme and UI
+
 - `/theme` - Change UI themes
 - `/stats` - Display usage statistics
 - `/memory` - Memory management
@@ -82,6 +88,7 @@ notabot-full --help
 ## ⚙️ Configuration
 
 ### Environment Variables
+
 Copy `env.example` to `.env` and configure:
 
 ```bash
@@ -101,18 +108,20 @@ DEBUG=1
 ```
 
 ### Custom Configuration
+
 Create a `.gemini/config.yaml` file for advanced settings:
 
 ```yaml
 # Example configuration
-model: "gemini-2.5-flash"
-theme: "default"
+model: 'gemini-2.5-flash'
+theme: 'default'
 debug: false
 ```
 
 ## 🎨 Themes
 
 Notabot CLI supports multiple themes:
+
 - Default
 - Dracula
 - GitHub Dark/Light
@@ -124,10 +133,12 @@ Change themes with: `/theme`
 ## 🔧 Development
 
 ### Prerequisites
+
 - Node.js 20+
 - npm or yarn
 
 ### Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/involvex/notabot-cli.git
@@ -147,6 +158,7 @@ npm run start
 ```
 
 ### Project Structure
+
 ```
 notabot-cli/
 ├── packages/
@@ -163,6 +175,7 @@ notabot-cli/
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### Development Workflow
+
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
@@ -201,4 +214,4 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ---
 
-**Happy coding with Notabot CLI! 🚀** 
+**Happy coding with Notabot CLI! 🚀**

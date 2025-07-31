@@ -23,24 +23,25 @@ export const gitCommand: SlashCommand = {
   kind: CommandKind.BUILT_IN,
   action: async (context, args): Promise<MessageActionReturn> => {
     const query = args.trim();
-    
+
     if (!query) {
       return {
         type: 'message',
         messageType: 'error',
-        content: 'Usage: /git <search_query>\nExamples:\n  /git react\n  /git "machine learning"\n  /git user:username repo:repo-name\n  /git language:javascript stars:>1000',
+        content:
+          'Usage: /git <search_query>\nExamples:\n  /git react\n  /git "machine learning"\n  /git user:username repo:repo-name\n  /git language:javascript stars:>1000',
       };
     }
 
     try {
       // Search GitHub repositories using GitHub API
       const searchUrl = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=10`;
-      
+
       const response = await fetch(searchUrl, {
         headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'Notabot-CLI/1.0'
-        }
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'Notabot-CLI/1.0',
+        },
       });
 
       if (!response.ok) {
@@ -48,7 +49,8 @@ export const gitCommand: SlashCommand = {
           return {
             type: 'message',
             messageType: 'error',
-            content: 'GitHub API rate limit exceeded. Please try again later or use a GitHub token.',
+            content:
+              'GitHub API rate limit exceeded. Please try again later or use a GitHub token.',
           };
         }
         return {
@@ -71,12 +73,12 @@ export const gitCommand: SlashCommand = {
 
       // Format the results
       let result = `🔍 **GitHub Search Results for "${query}"**\n\n`;
-      
+
       repos.forEach((repo, index) => {
         const stars = repo.stargazers_count.toLocaleString();
         const language = repo.language || 'Unknown';
         const updated = new Date(repo.updated_at).toLocaleDateString();
-        
+
         result += `${index + 1}. **${repo.full_name}** ⭐${stars}\n`;
         result += `   📝 ${repo.description || 'No description'}\n`;
         result += `   💻 ${language} | 📅 Updated: ${updated}\n`;
@@ -120,11 +122,13 @@ export const gitCommand: SlashCommand = {
       'stars:>1000',
       'user:facebook',
       'user:google',
-      'user:microsoft'
+      'user:microsoft',
     ];
 
-    return suggestions.filter(suggestion => 
-      suggestion.toLowerCase().includes(partialArg.toLowerCase())
-    ).slice(0, 10);
+    return suggestions
+      .filter((suggestion) =>
+        suggestion.toLowerCase().includes(partialArg.toLowerCase()),
+      )
+      .slice(0, 10);
   },
-}; 
+};

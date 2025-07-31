@@ -1,211 +1,426 @@
-# Gemini CLI
+# 🚀 Enhanced CLI Agents
 
-[![Gemini CLI CI](https://github.com/google-gemini/gemini-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/google-gemini/gemini-cli/actions/workflows/ci.yml)
+**Advanced CLI agents with AI integration, OAuth authentication, and powerful features**
 
-![Gemini CLI Screenshot](./docs/assets/gemini-screenshot.png)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-16+-green.svg)](https://nodejs.org/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg)](https://nodejs.org/)
 
-This repository contains the Gemini CLI, a command-line AI workflow tool that connects to your
-tools, understands your code and accelerates your workflows.
+## ✨ Features
 
-With the Gemini CLI you can:
+### 🔐 **Authentication**
+- **Google OAuth**: Secure authentication without API keys
+- **API Key Support**: Traditional API key authentication
+- **Automatic Token Refresh**: Seamless OAuth token management
 
-- Query and edit large codebases in and beyond Gemini's 1M token context window.
-- Generate new apps from PDFs or sketches, using Gemini's multimodal capabilities.
-- Automate operational tasks, like querying pull requests or handling complex rebases.
-- Use tools and MCP servers to connect new capabilities, including [media generation with Imagen,
-  Veo or Lyria](https://github.com/GoogleCloudPlatform/vertex-ai-creative-studio/tree/main/experiments/mcp-genmedia)
-- Ground your queries with the [Google Search](https://ai.google.dev/gemini-api/docs/grounding)
-  tool, built into Gemini.
+### 🤖 **AI Integration**
+- **Gemini API**: Full integration with Google's Gemini AI
+- **Context Management**: Intelligent conversation context
+- **Code Analysis**: AI-powered code review and suggestions
 
-## Quickstart
+### 🛠️ **Advanced Tools**
+- **File Operations**: Read, write, and analyze files
+- **Shell Commands**: Execute system commands safely
+- **Web Search**: Search the web for information
+- **Directory Navigation**: Change directories with tracking
 
-You have two options to install Gemini CLI.
+### ⚠️ **YOLO Mode**
+- **Dangerous Operations**: Override safety restrictions
+- **Clear Warnings**: Visual indicators when enabled
+- **Session Tracking**: Monitor YOLO mode usage
 
-### With Node
+### 🌐 **Web Dashboard**
+- **Real-time Monitoring**: Live session statistics
+- **Remote Control**: Web interface for CLI control
+- **Beautiful UI**: Dark theme dashboard
 
-1. **Prerequisites:** Ensure you have [Node.js version 20](https://nodejs.org/en/download) or higher installed.
-2. **Run the CLI:** Execute the following command in your terminal:
+### ⌨️ **Autocomplete**
+- **Intelligent Suggestions**: Command and tool autocomplete
+- **History Learning**: Remember frequently used commands
+- **Context Awareness**: Smart suggestions based on usage
 
+## 🚀 Quick Start
+
+### Global Installation
+
+```bash
+# Install globally
+npm install -g enhanced-cli-agents
+
+# Or clone and install
+git clone https://github.com/yourusername/enhanced-cli-agents.git
+cd enhanced-cli-agents
+npm install -g .
+```
+
+### Usage
+
+```bash
+# Start enhanced CLI agent
+enhanced-cli
+
+# Or use short aliases
+ecli
+gemini-cli
+
+# Start simple CLI agent
+simple-cli
+scli
+```
+
+### Authentication
+
+```bash
+# Set API key
+/auth YOUR_GEMINI_API_KEY
+
+# Or use OAuth (recommended)
+/login
+```
+
+### Web Dashboard
+
+```bash
+# Start web server
+/webserver start
+
+# Visit http://localhost:4000
+```
+
+## 📦 Installation
+
+### Prerequisites
+
+- **Node.js**: Version 16 or higher
+- **npm**: For package management
+
+### Method 1: Global Installation (Recommended)
+
+```bash
+npm install -g enhanced-cli-agents
+```
+
+### Method 2: Clone and Install
+
+```bash
+git clone https://github.com/yourusername/enhanced-cli-agents.git
+cd enhanced-cli-agents
+npm install -g .
+```
+
+### Method 3: Direct Download
+
+```bash
+# Download files
+curl -O https://raw.githubusercontent.com/yourusername/enhanced-cli-agents/main/enhanced-cli-agent.js
+curl -O https://raw.githubusercontent.com/yourusername/enhanced-cli-agents/main/simple-cli-agent.js
+curl -O https://raw.githubusercontent.com/yourusername/enhanced-cli-agents/main/package.json
+
+# Install dependencies
+npm install
+
+# Make executable
+chmod +x enhanced-cli-agent.js simple-cli-agent.js
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```bash
+# For API key authentication
+export GEMINI_API_KEY="your-api-key"
+
+# For OAuth authentication
+export GOOGLE_CLIENT_ID="your-client-id"
+export GOOGLE_CLIENT_SECRET="your-client-secret"
+
+# Optional settings
+export ENHANCED_CLI_PORT=4000
+```
+
+### Settings Files
+
+Settings are automatically created in:
+- **Simple CLI**: `~/.simple-cli/settings.json`
+- **Enhanced CLI**: `~/.enhanced-cli/settings.json`
+
+### OAuth Setup
+
+1. **Create Google Cloud Project**:
+   - Visit [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing
+   - Enable the Gemini API
+
+2. **Create OAuth Credentials**:
+   - Go to "APIs & Services" > "Credentials"
+   - Create OAuth 2.0 Client ID
+   - Add `http://localhost:3000/auth/callback` to authorized redirect URIs
+
+3. **Set Environment Variables**:
    ```bash
-   npx https://github.com/google-gemini/gemini-cli
+   export GOOGLE_CLIENT_ID="your-client-id"
+   export GOOGLE_CLIENT_SECRET="your-client-secret"
    ```
 
-   Or install it with:
+## 🎮 Usage Examples
 
-   ```bash
-   npm install -g @google/gemini-cli
-   ```
+### Basic Usage
 
-   Then, run the CLI from anywhere:
+```bash
+# Start enhanced CLI
+enhanced-cli
 
-   ```bash
-   gemini
-   ```
+# Set API key
+/auth YOUR_API_KEY
 
-### With Homebrew
+# Start web dashboard
+/webserver start
 
-1. **Prerequisites:** Ensure you have [Homebrew](https://brew.sh/) installed.
-2. **Install the CLI** Execute the following command in your terminal:
+# Read project files
+/readall .
 
-   ```bash
-   brew install gemini-cli
-   ```
-
-   Then, run the CLI from anywhere:
-
-   ```bash
-   gemini
-   ```
-
-### Common Configuration steps
-
-3. **Pick a color theme**
-4. **Authenticate:** When prompted, sign in with your personal Google account. This will grant you up to 60 model requests per minute and 1,000 model requests per day using Gemini.
-
-You are now ready to use the Gemini CLI!
-
-### Use a Gemini API key:
-
-The Gemini API provides a free tier with [100 requests per day](https://ai.google.dev/gemini-api/docs/rate-limits#free-tier) using Gemini 2.5 Pro, control over which model you use, and access to higher rate limits (with a paid plan):
-
-1. Generate a key from [Google AI Studio](https://aistudio.google.com/apikey).
-2. Set it as an environment variable in your terminal. Replace `YOUR_API_KEY` with your generated key.
-
-   ```bash
-   export GEMINI_API_KEY="YOUR_API_KEY"
-   ```
-
-3. (Optionally) Upgrade your Gemini API project to a paid plan on the API key page (will automatically unlock [Tier 1 rate limits](https://ai.google.dev/gemini-api/docs/rate-limits#tier-1))
-
-### Use a Vertex AI API key:
-
-The Vertex AI API provides a [free tier](https://cloud.google.com/vertex-ai/generative-ai/docs/start/express-mode/overview) using express mode for Gemini 2.5 Pro, control over which model you use, and access to higher rate limits with a billing account:
-
-1. Generate a key from [Google Cloud](https://cloud.google.com/vertex-ai/generative-ai/docs/start/api-keys).
-2. Set it as an environment variable in your terminal. Replace `YOUR_API_KEY` with your generated key and set GOOGLE_GENAI_USE_VERTEXAI to true
-
-   ```bash
-   export GOOGLE_API_KEY="YOUR_API_KEY"
-   export GOOGLE_GENAI_USE_VERTEXAI=true
-   ```
-
-3. (Optionally) Add a billing account on your project to get access to [higher usage limits](https://cloud.google.com/vertex-ai/generative-ai/docs/quotas)
-
-For other authentication methods, including Google Workspace accounts, see the [authentication](./docs/cli/authentication.md) guide.
-
-## Examples
-
-Once the CLI is running, you can start interacting with Gemini from your shell.
-
-You can start a project from a new directory:
-
-```sh
-cd new-project/
-gemini
-> Write me a Gemini Discord bot that answers questions using a FAQ.md file I will provide
+# Navigate and analyze
+/cd src
+/analyze main.js
 ```
 
-Or work with an existing project:
+### OAuth Authentication
 
-```sh
-git clone https://github.com/google-gemini/gemini-cli
-cd gemini-cli
-gemini
-> Give me a summary of all of the changes that went in yesterday
+```bash
+# Start OAuth flow
+/login
+
+# Browser opens for authentication
+# Sign in with Google account
+# Grant permissions
+# Return to CLI - authenticated!
+
+# Use AI without API key
+Hello, how can you help me today?
+
+# Check authentication status
+/settings
+
+# Logout when done
+/logout
 ```
 
-### Next steps
+### Autocomplete Usage
 
-- Learn how to [contribute to or build from the source](./CONTRIBUTING.md).
-- Explore the available **[CLI Commands](./docs/cli/commands.md)**.
-- If you encounter any issues, review the **[troubleshooting guide](./docs/troubleshooting.md)**.
-- For more comprehensive documentation, see the [full documentation](./docs/index.md).
-- Take a look at some [popular tasks](#popular-tasks) for more inspiration.
-- Check out our **[Official Roadmap](./ROADMAP.md)**
+```bash
+# Command autocomplete
+/hel<Tab>     # → /help
+/we<Tab>      # → /webserver
+/au<Tab>      # → /auth
 
-### Troubleshooting
-
-Head over to the [troubleshooting guide](docs/troubleshooting.md) if you're
-having issues.
-
-## Popular tasks
-
-### Explore a new codebase
-
-Start by `cd`ing into an existing or newly-cloned repository and running `gemini`.
-
-```text
-> Describe the main pieces of this system's architecture.
+# Tool autocomplete
+@list<Tab>    # → @list_directory path=.
+@read<Tab>    # → @read_file path=filename.txt
+@write<Tab>   # → @write_file path=file.txt content=Hello World
 ```
 
-```text
-> What security mechanisms are in place?
+### YOLO Mode
+
+```bash
+# Enable YOLO mode
+/yolo
+
+# Use dangerous operations
+@run_shell_command command=rm -rf /tmp/test
+
+# Disable YOLO mode
+/yolo
 ```
 
-```text
-> Provide a step-by-step dev onboarding doc for developers new to the codebase.
+## 🛠️ Available Commands
+
+### Core Commands
+```bash
+/help       # Show help
+/quit       # Exit application
+/clear      # Clear screen
+/tools      # Show available tools
+/history    # Show conversation history
+/settings   # Show current settings
+/auth       # Set API key
+/debug      # Toggle debug mode
+/stats      # Show session statistics
+/analyze    # Analyze code file
+/context    # Show current context
+/reset      # Reset session
 ```
 
-```text
-> Summarize this codebase and highlight the most interesting patterns or techniques I could learn from.
+### Advanced Commands
+```bash
+/yolo       # Toggle YOLO mode
+/cd         # Change directory
+/webserver  # Control web server
+/readall    # Read all files in directory
+/login      # Login with Google OAuth
+/logout     # Logout from OAuth
 ```
 
-```text
-> Identify potential areas for improvement or refactoring in this codebase, highlighting parts that appear fragile, complex, or hard to maintain.
+## 🛠️ Available Tools
+
+### Basic Tools
+```bash
+@list_directory path=.                    # List files and directories
+@read_file path=filename.txt             # Read file contents
+@write_file path=file.txt content=Hello  # Write to file
+@run_shell_command command=ls -la        # Execute shell command
 ```
 
-```text
-> Which parts of this codebase might be challenging to scale or debug?
+### Advanced Tools
+```bash
+@read_all_files path=. exclude=node_modules,.git  # Read all files
+@cd path=../                            # Change directory
+@yolo_mode action=enable                # Enable YOLO mode
+@code_analysis path=filename.js         # Analyze code
+@web_search query=search term           # Web search
 ```
 
-```text
-> Generate a README section for the [module name] module explaining what it does and how to use it.
+## 🌐 Web Dashboard
+
+### Features
+- **Real-time Statistics**: Session metrics and usage
+- **Live History**: Conversation history with timestamps
+- **Settings Management**: View and modify settings
+- **Remote Control**: Execute commands from web interface
+- **Beautiful UI**: Dark theme with responsive design
+
+### Access
+```bash
+# Start web server
+/webserver start
+
+# Visit in browser
+http://localhost:4000
 ```
 
-```text
-> What kind of error handling and logging strategies does the project use?
+## 🔒 Security Features
+
+### OAuth Security
+- **HTTPS Only**: All OAuth communication over HTTPS
+- **Secure Token Storage**: Tokens encrypted in settings file
+- **Token Refresh**: Automatic token refresh before expiration
+- **Scope Limitation**: Minimal required permissions
+- **Secure Logout**: Complete token cleanup
+
+### YOLO Mode Safety
+- **Clear Warnings**: Visual indicators when enabled
+- **Confirmation System**: Confirm dangerous operations
+- **Session Tracking**: Monitor YOLO mode usage
+- **Automatic Logging**: Track dangerous actions
+
+## 📊 Session Statistics
+
+```bash
+Session Statistics:
+  User messages: 5
+  Assistant messages: 5
+  Tool calls: 3
+  Total messages: 13
+  Session duration: 120 seconds
+  Current directory: /path/to/current/dir
+  YOLO mode: Disabled
+  Web server: Running
+  Auth type: OAuth
+  User: John Doe (john@example.com)
 ```
 
-```text
-> Which tools, libraries, and dependencies are used in this project?
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+#### OAuth Issues
+```bash
+# Check if OAuth is configured
+/settings
+
+# Verify environment variables
+echo $GOOGLE_CLIENT_ID
+echo $GOOGLE_CLIENT_SECRET
+
+# Clear OAuth tokens and retry
+/logout
+/login
 ```
 
-### Work with your existing code
+#### Autocomplete Issues
+```bash
+# Reset autocomplete history
+# Edit ~/.enhanced-cli/settings.json and clear commandHistory
 
-```text
-> Implement a first draft for GitHub issue #123.
+# Check if Tab key is working
+# Try different terminal emulator
 ```
 
-```text
-> Help me migrate this codebase to the latest version of Java. Start with a plan.
+#### Web Server Issues
+```bash
+# Check if port is in use
+netstat -an | findstr :4000
+
+# Change port
+# Edit settings.json: "webServerPort": 4001
 ```
 
-### Automate your workflows
+### Getting Help
 
-Use MCP servers to integrate your local system tools with your enterprise collaboration suite.
+1. **Check Documentation**: Read the comprehensive documentation files
+2. **Use Help Command**: `/help` for available commands
+3. **Check Settings**: `/settings` for current configuration
+4. **View Statistics**: `/stats` for session information
+5. **Reset Session**: `/reset` to start fresh
 
-```text
-> Make me a slide deck showing the git history from the last 7 days, grouped by feature and team member.
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/enhanced-cli-agents.git
+cd enhanced-cli-agents
+
+# Install dependencies
+npm install
+
+# Run in development mode
+npm start
+
+# Run tests
+npm test
 ```
 
-```text
-> Make a full-screen web app for a wall display to show our most interacted-with GitHub issues.
-```
+## 📄 License
 
-### Interact with your system
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```text
-> Convert all the images in this directory to png, and rename them to use dates from the exif data.
-```
+## 🙏 Acknowledgments
 
-```text
-> Organize my PDF invoices by month of expenditure.
-```
+- **Google Gemini API**: For AI capabilities
+- **Node.js Community**: For excellent tooling
+- **Open Source Contributors**: For inspiration and libraries
 
-### Uninstall
+## 📞 Support
 
-Head over to the [Uninstall](docs/Uninstall.md) guide for uninstallation instructions.
+- **Issues**: [GitHub Issues](https://github.com/yourusername/enhanced-cli-agents/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/enhanced-cli-agents/discussions)
+- **Documentation**: See the documentation files in this repository
 
-## Terms of Service and Privacy Notice
+## 🚀 Roadmap
 
-For details on the terms of service and privacy notice applicable to your use of Gemini CLI, see the [Terms of Service and Privacy Notice](./docs/tos-privacy.md).
+- [ ] **Plugin System**: Extensible tool architecture
+- [ ] **Multi-Account OAuth**: Support multiple Google accounts
+- [ ] **Cloud Sync**: Sync settings across devices
+- [ ] **Advanced Analytics**: Detailed usage analytics
+- [ ] **Mobile App**: Companion mobile application
+- [ ] **Enterprise Features**: SSO and team management
+
+---
+
+**Made with ❤️ by the Enhanced CLI Agents Team**
+
+*Built for developers, by developers*

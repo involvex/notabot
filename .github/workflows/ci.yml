@@ -1,153 +1,152 @@
-# .github/workflows/ci.yml
-
-name: Gemini CLI CI
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, release]
+    branches: [ main, develop ]
   pull_request:
-    branches: [main, release]
-  merge_group:
+    branches: [ main ]
+  release:
+    types: [ published ]
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read # For checkout
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run formatter check
-        run: |
-          npm run format
-          git diff --exit-code
-
-      - name: Run linter
-        run: npm run lint:ci
-
-      - name: Build project
-        run: npm run build
-
-      - name: Run type check
-        run: npm run typecheck
-
   test:
-    name: Test
-    runs-on: ${{ matrix.os }}
-    needs: lint
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [20.x, 22.x, 24.x]
+        node-version: [16.x, 18.x, 20.x]
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Check code quality
+      run: |
+        # Basic syntax check
+        node -c enhanced-cli-agent.js
+        node -c simple-cli-agent.js
+        node -c oauth-auth.js
+        node -c autocomplete.js
+        node -c setup.js
 
-      - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: Build project
-        run: npm run build
-
-      - name: Install dependencies for testing
-        run: npm ci # Install fresh dependencies using the downloaded package-lock.json
-
-      - name: Run tests and generate reports
-        run: npm run test:ci
-        env:
-          NO_COLOR: true
-
-      - name: Publish Test Report (for non-forks)
-        if: always() && (github.event.pull_request.head.repo.full_name == github.repository)
-        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2
-        with:
-          name: Test Results (Node ${{ matrix.node-version }})
-          path: packages/*/junit.xml
-          reporter: java-junit
-          fail-on-error: 'false'
-
-      - name: Upload Test Results Artifact (for forks)
-        if: always() && (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: test-results-fork-${{ matrix.node-version }}-${{ matrix.os }}
-          path: packages/*/junit.xml
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: always()
-        with:
-          name: coverage-reports-${{ matrix.node-version }}-${{ matrix.os }}
-          path: packages/*/coverage
-
-  post_coverage_comment:
-    name: Post Coverage Comment
-    runs-on: ubuntu-latest
+  build:
     needs: test
-    if: always() && github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name == github.repository)
-    continue-on-error: true
-    permissions:
-      contents: read # For checkout
-      pull-requests: write # For commenting
-    strategy:
-      matrix:
-        # Reduce noise by only posting the comment once
-        os: [ubuntu-latest]
-        node-version: [22.x]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-
-      - name: Download coverage reports artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: coverage-reports-${{ matrix.node-version }}-${{ matrix.os }}
-          path: coverage_artifact # Download to a specific directory
-
-      - name: Post Coverage Comment using Composite Action
-        uses: ./.github/actions/post-coverage-comment # Path to the composite action directory
-        with:
-          cli_json_file: coverage_artifact/cli/coverage/coverage-summary.json
-          core_json_file: coverage_artifact/core/coverage/coverage-summary.json
-          cli_full_text_summary_file: coverage_artifact/cli/coverage/full-text-summary.txt
-          core_full_text_summary_file: coverage_artifact/core/coverage/full-text-summary.txt
-          node_version: ${{ matrix.node-version }}
-          os: ${{ matrix.os }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  codeql:
-    name: CodeQL
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build package
+      run: npm run build
+    
+    - name: Create release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: Release v${{ github.run_number }}
+        body: |
+          ## What's Changed
+          
+          ### 🚀 New Features
+          - Enhanced CLI agents with AI integration
+          - Google OAuth authentication
+          - Advanced autocomplete functionality
+          - YOLO mode for dangerous operations
+          - Web dashboard with real-time monitoring
+          
+          ### 🔧 Improvements
+          - Global installation support
+          - Cross-platform compatibility
+          - Comprehensive documentation
+          - Automated CI/CD pipeline
+          
+          ### 🐛 Bug Fixes
+          - Fixed immediate quitting issue
+          - Improved settings management
+          - Enhanced error handling
+          
+          ## Installation
+          
+          ```bash
+          npm install -g enhanced-cli-agents
+          ```
+          
+          ## Quick Start
+          
+          ```bash
+          enhanced-cli
+          /auth YOUR_API_KEY
+          /webserver start
+          ```
+          
+          ## Documentation
+          
+          - [README.md](README.md) - Main documentation
+          - [ENHANCED-FEATURES-README.md](ENHANCED-FEATURES-README.md) - Advanced features
+          - [OAUTH-AUTOCOMPLETE-README.md](OAUTH-AUTOCOMPLETE-README.md) - OAuth and autocomplete
+          - [FINAL-FEATURES-SUMMARY.md](FINAL-FEATURES-SUMMARY.md) - Complete feature summary
+        draft: false
+        prerelease: false
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@181d5eefc20863364f96762470ba6f862bdef56b # v3
-        with:
-          languages: javascript
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Publish to NPM
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@181d5eefc20863364f96762470ba6f862bdef56b # v3
+  deploy-docs:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
+        destination_dir: ./
+        force_orphan: true

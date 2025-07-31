@@ -709,6 +709,19 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
   const initialPrompt = useMemo(() => config.getQuestion(), [config]);
   const geminiClient = config.getGeminiClient();
 
+  // Initialize tools when the client is ready
+  useEffect(() => {
+    console.log('DEBUG: useEffect for setTools called');
+    console.log('DEBUG: geminiClient exists:', !!geminiClient);
+    console.log('DEBUG: isInitialized:', geminiClient?.isInitialized?.());
+    if (geminiClient?.isInitialized?.()) {
+      console.log('DEBUG: Calling setTools');
+      geminiClient.setTools().catch((error) => {
+        console.error('Failed to set tools:', error);
+      });
+    }
+  }, [geminiClient]);
+
   useEffect(() => {
     if (
       initialPrompt &&

@@ -157,8 +157,16 @@ export async function isValidImageFile(filePath: string): Promise<boolean> {
   try {
     // Check file extension
     const ext = path.extname(filePath).toLowerCase();
-    const supportedExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.webp'];
-    
+    const supportedExtensions = [
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.gif',
+      '.bmp',
+      '.tiff',
+      '.webp',
+    ];
+
     if (!supportedExtensions.includes(ext)) {
       return false;
     }
@@ -170,38 +178,66 @@ export async function isValidImageFile(filePath: string): Promise<boolean> {
     await fd.close();
 
     // PNG signature: 89 50 4E 47
-    if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+    if (
+      buffer[0] === 0x89 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x4e &&
+      buffer[3] === 0x47
+    ) {
       return true;
     }
-    
+
     // JPEG signature: FF D8
-    if (buffer[0] === 0xFF && buffer[1] === 0xD8) {
+    if (buffer[0] === 0xff && buffer[1] === 0xd8) {
       return true;
     }
-    
+
     // GIF signature: 47 49 46 38 (GIF8)
-    if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) {
+    if (
+      buffer[0] === 0x47 &&
+      buffer[1] === 0x49 &&
+      buffer[2] === 0x46 &&
+      buffer[3] === 0x38
+    ) {
       return true;
     }
-    
+
     // BMP signature: 42 4D (BM)
-    if (buffer[0] === 0x42 && buffer[1] === 0x4D) {
+    if (buffer[0] === 0x42 && buffer[1] === 0x4d) {
       return true;
     }
-    
+
     // TIFF signature: 49 49 2A 00 (little-endian) or 4D 4D 00 2A (big-endian)
-    if ((buffer[0] === 0x49 && buffer[1] === 0x49 && buffer[2] === 0x2A && buffer[3] === 0x00) ||
-        (buffer[0] === 0x4D && buffer[1] === 0x4D && buffer[2] === 0x00 && buffer[3] === 0x2A)) {
+    if (
+      (buffer[0] === 0x49 &&
+        buffer[1] === 0x49 &&
+        buffer[2] === 0x2a &&
+        buffer[3] === 0x00) ||
+      (buffer[0] === 0x4d &&
+        buffer[1] === 0x4d &&
+        buffer[2] === 0x00 &&
+        buffer[3] === 0x2a)
+    ) {
       return true;
     }
-    
+
     // WebP signature: 52 49 46 46 (RIFF) followed by 57 45 42 50 (WEBP)
-    if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) {
-      if (buffer[4] === 0x57 && buffer[5] === 0x45 && buffer[6] === 0x42 && buffer[7] === 0x50) {
+    if (
+      buffer[0] === 0x52 &&
+      buffer[1] === 0x49 &&
+      buffer[2] === 0x46 &&
+      buffer[3] === 0x46
+    ) {
+      if (
+        buffer[4] === 0x57 &&
+        buffer[5] === 0x45 &&
+        buffer[6] === 0x42 &&
+        buffer[7] === 0x50
+      ) {
         return true;
       }
     }
-    
+
     return false;
   } catch {
     return false;

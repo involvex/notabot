@@ -37,7 +37,8 @@ const OAUTH_CLIENT_ID = process.env.OAUTH_CLIENT_ID || 'YOUR_OAUTH_CLIENT_ID';
 // "The process results in a client ID and, in some cases, a client secret,
 // which you embed in the source code of your application. (In this context,
 // the client secret is obviously not treated as a secret.)"
-const OAUTH_CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || 'YOUR_OAUTH_CLIENT_SECRET';
+const OAUTH_CLIENT_SECRET =
+  process.env.OAUTH_CLIENT_SECRET || 'YOUR_OAUTH_CLIENT_SECRET';
 
 // OAuth Scopes for Cloud Code authorization.
 const OAUTH_SCOPE = [

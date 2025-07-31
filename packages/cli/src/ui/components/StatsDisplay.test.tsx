@@ -38,6 +38,19 @@ const renderWithMockedStats = (metrics: SessionMetrics) => {
 };
 
 describe('<StatsDisplay />', () => {
+  beforeAll(() => {
+    vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (
+      this: number,
+    ) {
+      // Use a stable 'en-US' format for test consistency.
+      return new Intl.NumberFormat('en-US').format(this);
+    });
+  });
+
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders only the Performance section in its zero state', () => {
     const zeroMetrics: SessionMetrics = {
       models: {},

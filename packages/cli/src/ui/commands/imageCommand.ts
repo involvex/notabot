@@ -12,16 +12,18 @@ import { isValidImageFile } from '../utils/clipboardUtils.js';
 export const imageCommand: SlashCommand = {
   name: 'image',
   altNames: ['img', 'photo'],
-  description: 'add image to prompt - supports file paths, clipboard, or drag-and-drop',
+  description:
+    'add image to prompt - supports file paths, clipboard, or drag-and-drop',
   kind: CommandKind.BUILT_IN,
   action: (context, args): MessageActionReturn => {
     const imagePath = args.trim();
-    
+
     if (!imagePath) {
       return {
         type: 'message',
         messageType: 'error',
-        content: 'Usage: /image <file_path>\nExamples:\n  /image screenshot.png\n  /image /path/to/image.jpg\n  /image @clipboard (to paste from clipboard)\n  Drag and drop an image file onto the CLI',
+        content:
+          'Usage: /image <file_path>\nExamples:\n  /image screenshot.png\n  /image /path/to/image.jpg\n  /image @clipboard (to paste from clipboard)\n  Drag and drop an image file onto the CLI',
       };
     }
 
@@ -30,14 +32,15 @@ export const imageCommand: SlashCommand = {
       return {
         type: 'message',
         messageType: 'info',
-        content: 'Use Ctrl+V to paste an image from clipboard, or drag and drop an image file onto the CLI.',
+        content:
+          'Use Ctrl+V to paste an image from clipboard, or drag and drop an image file onto the CLI.',
       };
     }
 
     try {
       // Resolve the path relative to current working directory
       const resolvedPath = path.resolve(process.cwd(), imagePath);
-      
+
       // Check if the path exists
       if (!fs.existsSync(resolvedPath)) {
         return {
@@ -70,7 +73,7 @@ export const imageCommand: SlashCommand = {
 
       // Get relative path from current directory
       const relativePath = path.relative(process.cwd(), resolvedPath);
-      
+
       return {
         type: 'message',
         messageType: 'info',
@@ -88,19 +91,30 @@ export const imageCommand: SlashCommand = {
     try {
       const currentDir = process.cwd();
       const items = fs.readdirSync(currentDir, { withFileTypes: true });
-      
+
       const imageFiles = items
-        .filter(item => item.isFile())
-        .map(item => item.name)
-        .filter(name => {
+        .filter((item) => item.isFile())
+        .map((item) => item.name)
+        .filter((name) => {
           const ext = path.extname(name).toLowerCase();
-          return ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.webp'].includes(ext);
+          return [
+            '.png',
+            '.jpg',
+            '.jpeg',
+            '.gif',
+            '.bmp',
+            '.tiff',
+            '.webp',
+          ].includes(ext);
         })
-        .filter(name => name.toLowerCase().includes(partialArg.toLowerCase()))
+        .filter((name) => name.toLowerCase().includes(partialArg.toLowerCase()))
         .slice(0, 10); // Limit to 10 suggestions
 
       // Add clipboard option if partial matches
-      if (partialArg.toLowerCase().includes('clipboard') || partialArg.toLowerCase().includes('clip')) {
+      if (
+        partialArg.toLowerCase().includes('clipboard') ||
+        partialArg.toLowerCase().includes('clip')
+      ) {
         imageFiles.unshift('@clipboard');
       }
 
@@ -109,4 +123,4 @@ export const imageCommand: SlashCommand = {
       return [];
     }
   },
-}; 
+};

@@ -53,31 +53,34 @@ describe('imageCommand', () => {
   describe('action', () => {
     it('should return usage help when no arguments provided', () => {
       const result = imageCommand.action!(mockContext, '');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'error',
-        content: 'Usage: /image <file_path>\nExamples:\n  /image screenshot.png\n  /image /path/to/image.jpg\n  /image @clipboard (to paste from clipboard)\n  Drag and drop an image file onto the CLI',
+        content:
+          'Usage: /image <file_path>\nExamples:\n  /image screenshot.png\n  /image /path/to/image.jpg\n  /image @clipboard (to paste from clipboard)\n  Drag and drop an image file onto the CLI',
       });
     });
 
     it('should handle clipboard reference', () => {
       const result = imageCommand.action!(mockContext, '@clipboard');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
-        content: 'Use Ctrl+V to paste an image from clipboard, or drag and drop an image file onto the CLI.',
+        content:
+          'Use Ctrl+V to paste an image from clipboard, or drag and drop an image file onto the CLI.',
       });
     });
 
     it('should handle clipboard reference without @', () => {
       const result = imageCommand.action!(mockContext, 'clipboard');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
-        content: 'Use Ctrl+V to paste an image from clipboard, or drag and drop an image file onto the CLI.',
+        content:
+          'Use Ctrl+V to paste an image from clipboard, or drag and drop an image file onto the CLI.',
       });
     });
 
@@ -86,7 +89,7 @@ describe('imageCommand', () => {
       mockFs.existsSync.mockReturnValue(false);
 
       const result = imageCommand.action!(mockContext, 'nonexistent.png');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'error',
@@ -102,7 +105,7 @@ describe('imageCommand', () => {
       } as any);
 
       const result = imageCommand.action!(mockContext, 'directory');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'error',
@@ -120,11 +123,12 @@ describe('imageCommand', () => {
       mockPath.relative.mockReturnValue('image.png');
 
       const result = imageCommand.action!(mockContext, 'image.png');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
-        content: 'Image added: image.png\nUse @image.png in your prompt to include this image.',
+        content:
+          'Image added: image.png\nUse @image.png in your prompt to include this image.',
       });
     });
 
@@ -134,7 +138,7 @@ describe('imageCommand', () => {
       });
 
       const result = imageCommand.action!(mockContext, 'restricted.png');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'error',
@@ -144,58 +148,100 @@ describe('imageCommand', () => {
   });
 
   describe('completion', () => {
-    it('should return image file suggestions', async () => {
+    it('should debug completion function', async () => {
+      // Set up a simple mock that we can verify
       const mockItems = [
-        { name: 'image1.png', isFile: () => true },
-        { name: 'image2.jpg', isFile: () => true },
-        { name: 'text.txt', isFile: () => true },
-        { name: 'image3.gif', isFile: () => true },
+        { name: 'test.png', isFile: () => true, isDirectory: () => false },
       ];
 
-      mockFs.readdirSync.mockReturnValue(mockItems as any);
+      mockFs.readdirSync.mockReturnValue(mockItems as fs.Dirent[]);
+
+      // Test if the completion function exists
+      expect(imageCommand.completion).toBeDefined();
+
+      // Test if process.cwd is mocked
+      expect(process.cwd()).toBe('/test/current/dir');
+
+      // Test if the mock is working
+      const mockResult = mockFs.readdirSync('/test/current/dir', {
+        withFileTypes: true,
+      });
+      expect(mockResult).toEqual(mockItems);
+
+      // Test the completion function
+      const result = await imageCommand.completion!(mockContext, 'test');
+
+      // Check if readdirSync was called
+      expect(mockFs.readdirSync).toHaveBeenCalled();
+
+      console.log('Image completion result:', result);
+      console.log('Mock calls:', mockFs.readdirSync.mock.calls);
+    });
+
+    it('should return image file suggestions', async () => {
+      const mockItems = [
+        { name: 'image1.png', isFile: () => true, isDirectory: () => false },
+        { name: 'image2.jpg', isFile: () => true, isDirectory: () => false },
+        { name: 'text.txt', isFile: () => true, isDirectory: () => false },
+        { name: 'image3.gif', isFile: () => true, isDirectory: () => false },
+        { name: 'document.pdf', isFile: () => true, isDirectory: () => false },
+      ];
+
+      mockFs.readdirSync.mockReturnValue(mockItems as fs.Dirent[]);
 
       const result = await imageCommand.completion!(mockContext, 'image');
-      
+
       expect(result).toEqual(['image1.png', 'image2.jpg', 'image3.gif']);
+      expect(mockFs.readdirSync).toHaveBeenCalledWith('/test/current/dir', { withFileTypes: true });
     });
 
     it('should filter suggestions based on partial input', async () => {
       const mockItems = [
-        { name: 'screenshot.png', isFile: () => true },
-        { name: 'photo.jpg', isFile: () => true },
-        { name: 'other.txt', isFile: () => true },
+        {
+          name: 'screenshot.png',
+          isFile: () => true,
+          isDirectory: () => false,
+        },
+        { name: 'photo.jpg', isFile: () => true, isDirectory: () => false },
+        { name: 'other.txt', isFile: () => true, isDirectory: () => false },
+        { name: 'document.pdf', isFile: () => true, isDirectory: () => false },
       ];
 
-      mockFs.readdirSync.mockReturnValue(mockItems as any);
+      mockFs.readdirSync.mockReturnValue(mockItems as fs.Dirent[]);
 
       const result = await imageCommand.completion!(mockContext, 'screen');
-      
+
       expect(result).toEqual(['screenshot.png']);
+      expect(mockFs.readdirSync).toHaveBeenCalledWith('/test/current/dir', { withFileTypes: true });
     });
 
     it('should include clipboard option when partial matches', async () => {
       const mockItems = [
-        { name: 'image.png', isFile: () => true },
+        { name: 'image.png', isFile: () => true, isDirectory: () => false },
+        { name: 'document.txt', isFile: () => true, isDirectory: () => false },
       ];
 
-      mockFs.readdirSync.mockReturnValue(mockItems as any);
+      mockFs.readdirSync.mockReturnValue(mockItems as fs.Dirent[]);
 
       const result = await imageCommand.completion!(mockContext, 'clip');
-      
+
       expect(result).toEqual(['@clipboard', 'image.png']);
+      expect(mockFs.readdirSync).toHaveBeenCalledWith('/test/current/dir', { withFileTypes: true });
     });
 
     it('should limit suggestions to 10 items', async () => {
       const mockItems = Array.from({ length: 15 }, (_, i) => ({
         name: `image${i}.png`,
         isFile: () => true,
+        isDirectory: () => false,
       }));
 
-      mockFs.readdirSync.mockReturnValue(mockItems as any);
+      mockFs.readdirSync.mockReturnValue(mockItems as fs.Dirent[]);
 
       const result = await imageCommand.completion!(mockContext, '');
-      
+
       expect(result).toHaveLength(10);
+      expect(mockFs.readdirSync).toHaveBeenCalledWith('/test/current/dir', { withFileTypes: true });
     });
 
     it('should return empty array on error', async () => {
@@ -204,7 +250,7 @@ describe('imageCommand', () => {
       });
 
       const result = await imageCommand.completion!(mockContext, '');
-      
+
       expect(result).toEqual([]);
     });
   });
@@ -213,8 +259,10 @@ describe('imageCommand', () => {
     it('should have correct name and description', () => {
       expect(imageCommand.name).toBe('image');
       expect(imageCommand.altNames).toEqual(['img', 'photo']);
-      expect(imageCommand.description).toBe('add image to prompt - supports file paths, clipboard, or drag-and-drop');
+      expect(imageCommand.description).toBe(
+        'add image to prompt - supports file paths, clipboard, or drag-and-drop',
+      );
       expect(imageCommand.kind).toBe('built-in');
     });
   });
-}); 
+});

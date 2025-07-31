@@ -52,7 +52,8 @@ describe('gitCommand', () => {
       expect(result).toEqual({
         type: 'message',
         messageType: 'error',
-        content: 'GitHub API rate limit exceeded. Please try again later or use a GitHub token.',
+        content:
+          'GitHub API rate limit exceeded. Please try again later or use a GitHub token.',
       });
     });
 
@@ -173,4 +174,4 @@ describe('gitCommand', () => {
       expect(result).toContain('react');
     });
   });
-}); 
+});

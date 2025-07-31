@@ -13,8 +13,6 @@ import {
 } from '../core/contentGenerator.js';
 import { PromptRegistry } from '../prompts/prompt-registry.js';
 import { ToolRegistry } from '../tools/tool-registry.js';
-// Temporarily comment out tool imports due to API compatibility issues
-/*
 import { LSTool } from '../tools/ls.js';
 import { ReadFileTool } from '../tools/read-file.js';
 import { GrepTool } from '../tools/grep.js';
@@ -27,10 +25,8 @@ import { ReadManyFilesTool } from '../tools/read-many-files.js';
 import {
   MemoryTool,
   setGeminiMdFilename,
-  GEMINI_CONFIG_DIR as GEMINI_DIR,
 } from '../tools/memoryTool.js';
 import { WebSearchTool } from '../tools/web-search.js';
-*/
 import { GeminiClient } from '../core/client.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { GitService } from '../services/gitService.js';
@@ -308,7 +304,7 @@ export class Config {
     this.ideClient = params.ideClient;
 
     if (params.contextFileName) {
-      // setGeminiMdFilename(params.contextFileName); // This line was commented out in the original file
+      setGeminiMdFilename(params.contextFileName);
     }
 
     if (this.telemetrySettings.enabled) {
@@ -631,10 +627,6 @@ export class Config {
   async createToolRegistry(): Promise<ToolRegistry> {
     const registry = new ToolRegistry(this);
 
-    // Temporarily disable all tools due to API compatibility issues
-    // TODO: Fix tool format for newer API version
-    console.warn('All tools temporarily disabled due to API compatibility issues');
-    
     // helper to create & register core tools that are enabled
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const _registerCoreTool = (ToolClass: any, ...args: unknown[]) => {
@@ -647,13 +639,30 @@ export class Config {
       if (coreTools === undefined) {
         isEnabled = true;
       } else {
-        isEnabled = coreTools.some(
-          (tool) =>
-            tool === className ||
-            tool === toolName ||
-            tool.startsWith(`${className}(`) ||
-            tool.startsWith(`${toolName}(`),
-        );
+              // Check if the tool name matches any of the core tools
+      // Map class names to tool names for backward compatibility
+      const toolNameMappings: Record<string, string> = {
+        'LSTool': 'list_directory',
+        'ReadFileTool': 'read_file',
+        'GrepTool': 'grep',
+        'GlobTool': 'glob',
+        'EditTool': 'edit',
+        'WriteFileTool': 'write_file',
+        'WebFetchTool': 'web_fetch',
+        'ReadManyFilesTool': 'read_many_files',
+        'ShellTool': 'shell',
+        'MemoryTool': 'save_memory',
+        'WebSearchTool': 'web_search',
+      };
+      
+      isEnabled = coreTools.some(
+        (tool) =>
+          tool === className ||
+          tool === toolName ||
+          tool === toolNameMappings[className] ||
+          tool.startsWith(`${className}(`) ||
+          tool.startsWith(`${toolName}(`),
+      );
       }
 
       if (
@@ -663,16 +672,15 @@ export class Config {
         isEnabled = false;
       }
 
-      // Temporarily disable all tools
-      isEnabled = false;
-
       if (isEnabled) {
+        console.log('DEBUG: Registering tool:', toolName);
         registry.registerTool(new ToolClass(...args));
+      } else {
+        console.log('DEBUG: Tool disabled:', toolName, 'coreTools:', coreTools, 'excludeTools:', excludeTools);
       }
     };
 
-    // Temporarily comment out all tool registrations
-    /*
+    // Register all core tools
     _registerCoreTool(LSTool, this);
     _registerCoreTool(ReadFileTool, this);
     _registerCoreTool(GrepTool, this);
@@ -684,9 +692,9 @@ export class Config {
     _registerCoreTool(ShellTool, this);
     _registerCoreTool(MemoryTool);
     _registerCoreTool(WebSearchTool, this);
-    */
 
     await registry.discoverAllTools();
+    console.log('DEBUG: Final tool count:', registry.getAllTools().length);
     return registry;
   }
 }

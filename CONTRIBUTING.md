@@ -1,299 +1,267 @@
-# How to Contribute
+# Contributing to Enhanced CLI Agents
 
-We would love to accept your patches and contributions to this project.
+Thank you for your interest in contributing to Enhanced CLI Agents! This document provides guidelines and information for contributors.
 
-## Before you begin
+## 🤝 How to Contribute
 
-### Sign our Contributor License Agreement
+### Reporting Issues
 
-Contributions to this project must be accompanied by a
-[Contributor License Agreement](https://cla.developers.google.com/about) (CLA).
-You (or your employer) retain the copyright to your contribution; this simply
-gives us permission to use and redistribute your contributions as part of the
-project.
+Before creating bug reports, please check the issue list as you might find out that you don't need to create one. When you are creating a bug report, please include as many details as possible:
 
-If you or your current employer have already signed the Google CLA (even if it
-was for a different project), you probably don't need to do it again.
+- **Use a clear and descriptive title**
+- **Describe the exact steps which reproduce the problem**
+- **Provide specific examples to demonstrate the steps**
+- **Describe the behavior you observed after following the steps**
+- **Explain which behavior you expected to see instead and why**
+- **Include details about your configuration and environment**
 
-Visit <https://cla.developers.google.com/> to see your current agreements or to
-sign a new one.
+### Suggesting Enhancements
 
-### Review our Community Guidelines
+If you have a suggestion for a new feature or enhancement, please:
 
-This project follows [Google's Open Source Community
-Guidelines](https://opensource.google/conduct/).
+- **Use a clear and descriptive title**
+- **Provide a step-by-step description of the suggested enhancement**
+- **Provide specific examples to demonstrate the steps**
+- **Describe the current behavior and explain which behavior you expected to see instead**
 
-## Contribution Process
+### Pull Requests
 
-### Code Reviews
+1. **Fork the repository**
+2. **Create a new branch** for your feature (`git checkout -b feature/amazing-feature`)
+3. **Make your changes** and commit them (`git commit -m 'Add some amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
 
-All submissions, including submissions by project members, require review. We
-use [GitHub pull requests](https://docs.github.com/articles/about-pull-requests)
-for this purpose.
+## 🛠️ Development Setup
 
-### Pull Request Guidelines
+### Prerequisites
 
-To help us review and merge your PRs quickly, please follow these guidelines. PRs that do not meet these standards may be closed.
+- **Node.js**: Version 16 or higher
+- **npm**: For package management
+- **Git**: For version control
 
-#### 1. Link to an Existing Issue
-
-All PRs should be linked to an existing issue in our tracker. This ensures that every change has been discussed and is aligned with the project's goals before any code is written.
-
-- **For bug fixes:** The PR should be linked to the bug report issue.
-- **For features:** The PR should be linked to the feature request or proposal issue that has been approved by a maintainer.
-
-If an issue for your change doesn't exist, please **open one first** and wait for feedback before you start coding.
-
-#### 2. Keep It Small and Focused
-
-We favor small, atomic PRs that address a single issue or add a single, self-contained feature.
-
-- **Do:** Create a PR that fixes one specific bug or adds one specific feature.
-- **Don't:** Bundle multiple unrelated changes (e.g., a bug fix, a new feature, and a refactor) into a single PR.
-
-Large changes should be broken down into a series of smaller, logical PRs that can be reviewed and merged independently.
-
-#### 3. Use Draft PRs for Work in Progress
-
-If you'd like to get early feedback on your work, please use GitHub's **Draft Pull Request** feature. This signals to the maintainers that the PR is not yet ready for a formal review but is open for discussion and initial feedback.
-
-#### 4. Ensure All Checks Pass
-
-Before submitting your PR, ensure that all automated checks are passing by running `npm run preflight`. This command runs all tests, linting, and other style checks.
-
-#### 5. Update Documentation
-
-If your PR introduces a user-facing change (e.g., a new command, a modified flag, or a change in behavior), you must also update the relevant documentation in the `/docs` directory.
-
-#### 6. Write Clear Commit Messages and a Good PR Description
-
-Your PR should have a clear, descriptive title and a detailed description of the changes. Follow the [Conventional Commits](https://www.conventionalcommits.org/) standard for your commit messages.
-
-- **Good PR Title:** `feat(cli): Add --json flag to 'config get' command`
-- **Bad PR Title:** `Made some changes`
-
-In the PR description, explain the "why" behind your changes and link to the relevant issue (e.g., `Fixes #123`).
-
-## Forking
-
-If you are forking the repository you will be able to run the Build, Test and Integration test workflows. However in order to make the integration tests run you'll need to add a [GitHub Repository Secret](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository) with a value of `GEMINI_API_KEY` and set that to a valid API key that you have available. Your key and secret are private to your repo; no one without access can see your key and you cannot see any secrets related to this repo.
-
-Additionally you will need to click on the `Actions` tab and enable workflows for your repository, you'll find it's the large blue button in the center of the screen.
-
-## Development Setup and Workflow
-
-This section guides contributors on how to build, modify, and understand the development setup of this project.
-
-### Setting Up the Development Environment
-
-**Prerequisites:**
-
-1.  **Node.js**:
-    - **Development:** Please use Node.js `~20.19.0`. This specific version is required due to an upstream development dependency issue. You can use a tool like [nvm](https://github.com/nvm-sh/nvm) to manage Node.js versions.
-    - **Production:** For running the CLI in a production environment, any version of Node.js `>=20` is acceptable.
-2.  **Git**
-
-### Build Process
-
-To clone the repository:
+### Local Development
 
 ```bash
-git clone https://github.com/google-gemini/gemini-cli.git # Or your fork's URL
-cd gemini-cli
-```
+# Clone the repository
+git clone https://github.com/yourusername/enhanced-cli-agents.git
+cd enhanced-cli-agents
 
-To install dependencies defined in `package.json` as well as root dependencies:
-
-```bash
+# Install dependencies
 npm install
-```
 
-To build the entire project (all packages):
+# Run in development mode
+npm start
 
-```bash
+# Run tests
+npm test
+
+# Build package
 npm run build
 ```
 
-This command typically compiles TypeScript to JavaScript, bundles assets, and prepares the packages for execution. Refer to `scripts/build.js` and `package.json` scripts for more details on what happens during the build.
+### Code Style
 
-### Enabling Sandboxing
+We use the following code style guidelines:
 
-[Sandboxing](#sandboxing) is highly recommended and requires, at a minimum, setting `GEMINI_SANDBOX=true` in your `~/.env` and ensuring a sandboxing provider (e.g. `macOS Seatbelt`, `docker`, or `podman`) is available. See [Sandboxing](#sandboxing) for details.
+- **Indentation**: 2 spaces
+- **Quotes**: Single quotes for strings
+- **Semicolons**: Always use semicolons
+- **Trailing commas**: Use trailing commas in objects and arrays
+- **Line length**: Maximum 80 characters
+- **File naming**: Use kebab-case for files
 
-To build both the `gemini` CLI utility and the sandbox container, run `build:all` from the root directory:
-
-```bash
-npm run build:all
-```
-
-To skip building the sandbox container, you can use `npm run build` instead.
-
-### Running
-
-To start the Gemini CLI from the source code (after building), run the following command from the root directory:
+### Testing
 
 ```bash
-npm start
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run specific test file
+npm test -- test-file.js
 ```
 
-If you'd like to run the source build outside of the gemini-cli folder you can utilize `npm link path/to/gemini-cli/packages/cli` (see: [docs](https://docs.npmjs.com/cli/v9/commands/npm-link)) or `alias gemini="node path/to/gemini-cli/packages/cli"` to run with `gemini`
+## 📁 Project Structure
+
+```
+enhanced-cli-agents/
+├── enhanced-cli-agent.js      # Main enhanced CLI agent
+├── simple-cli-agent.js        # Simple CLI agent
+├── oauth-auth.js             # OAuth authentication module
+├── autocomplete.js           # Autocomplete functionality
+├── setup.js                  # Setup and installation script
+├── package.json              # Package configuration
+├── README.md                 # Main documentation
+├── LICENSE                   # MIT license
+├── .github/                  # GitHub configuration
+│   └── workflows/           # CI/CD workflows
+├── docs/                    # Documentation
+└── tests/                   # Test files
+```
+
+## 🔧 Development Guidelines
+
+### Adding New Features
+
+1. **Create a feature branch** from `main`
+2. **Implement the feature** with proper error handling
+3. **Add tests** for your new functionality
+4. **Update documentation** if needed
+5. **Submit a pull request**
+
+### Adding New Tools
+
+1. **Create the tool function** in the appropriate agent file
+2. **Add tool registration** in the tool registry
+3. **Add autocomplete support** in the autocomplete module
+4. **Update documentation** with usage examples
+5. **Add tests** for the new tool
+
+### Adding New Commands
+
+1. **Create the command handler** in the agent file
+2. **Add command registration** in the command list
+3. **Add autocomplete support** for the command
+4. **Update help text** with command description
+5. **Add tests** for the new command
+
+### Security Guidelines
+
+- **Never commit API keys** or sensitive information
+- **Use environment variables** for configuration
+- **Validate all user input** to prevent injection attacks
+- **Use HTTPS** for all external communications
+- **Implement proper error handling** without exposing sensitive data
+
+## 🧪 Testing
 
 ### Running Tests
 
-This project contains two types of tests: unit tests and integration tests.
-
-#### Unit Tests
-
-To execute the unit test suite for the project:
-
 ```bash
-npm run test
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run specific test suite
+npm test -- --grep "authentication"
 ```
 
-This will run tests located in the `packages/core` and `packages/cli` directories. Ensure tests pass before submitting any changes. For a more comprehensive check, it is recommended to run `npm run preflight`.
+### Writing Tests
 
-#### Integration Tests
+- **Test all public functions** and methods
+- **Include edge cases** and error conditions
+- **Mock external dependencies** (APIs, file system)
+- **Use descriptive test names** that explain the behavior
+- **Keep tests simple** and focused on one thing
 
-The integration tests are designed to validate the end-to-end functionality of the Gemini CLI. They are not run as part of the default `npm run test` command.
+### Test Structure
 
-To run the integration tests, use the following command:
+```javascript
+describe('Feature Name', () => {
+  describe('when condition is met', () => {
+    it('should behave as expected', () => {
+      // Test implementation
+    });
+  });
 
-```bash
-npm run test:e2e
+  describe('when error occurs', () => {
+    it('should handle error gracefully', () => {
+      // Error test implementation
+    });
+  });
+});
 ```
 
-For more detailed information on the integration testing framework, please see the [Integration Tests documentation](./docs/integration-tests.md).
+## 📝 Documentation
 
-### Linting and Preflight Checks
+### Code Documentation
 
-To ensure code quality and formatting consistency, run the preflight check:
+- **Use JSDoc comments** for all public functions
+- **Include parameter types** and return types
+- **Provide usage examples** for complex functions
+- **Document error conditions** and exceptions
 
-```bash
-npm run preflight
-```
+### README Updates
 
-This command will run ESLint, Prettier, all tests, and other checks as defined in the project's `package.json`.
+When adding new features, update the following documentation:
 
-_ProTip_
+- **README.md**: Main documentation and quick start
+- **Feature-specific READMEs**: Detailed feature documentation
+- **Command help**: Inline help text for commands
 
-after cloning create a git precommit hook file to ensure your commits are always clean.
+## 🚀 Release Process
 
-```bash
-echo "
-# Run npm build and check for errors
-if ! npm run preflight; then
-  echo "npm build failed. Commit aborted."
-  exit 1
-fi
-" > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
-```
+### Versioning
 
-#### Formatting
+We use [Semantic Versioning](https://semver.org/) for version numbers:
 
-To separately format the code in this project by running the following command from the root directory:
+- **MAJOR**: Breaking changes
+- **MINOR**: New features (backward compatible)
+- **PATCH**: Bug fixes (backward compatible)
 
-```bash
-npm run format
-```
+### Release Checklist
 
-This command uses Prettier to format the code according to the project's style guidelines.
+Before releasing a new version:
 
-#### Linting
+- [ ] **All tests pass**
+- [ ] **Documentation is updated**
+- [ ] **Version number is updated**
+- [ ] **Changelog is updated**
+- [ ] **Release notes are prepared**
+- [ ] **GitHub release is created**
 
-To separately lint the code in this project, run the following command from the root directory:
+### Creating a Release
 
-```bash
-npm run lint
-```
+1. **Update version** in `package.json`
+2. **Update changelog** with new features and fixes
+3. **Create a release branch** from `main`
+4. **Submit a pull request** for the release
+5. **Merge and tag** the release
+6. **Publish to npm** (if applicable)
 
-### Coding Conventions
+## 🤝 Community Guidelines
 
-- Please adhere to the coding style, patterns, and conventions used throughout the existing codebase.
-- Consult [GEMINI.md](https://github.com/google-gemini/gemini-cli/blob/main/GEMINI.md) (typically found in the project root) for specific instructions related to AI-assisted development, including conventions for React, comments, and Git usage.
-- **Imports:** Pay special attention to import paths. The project uses ESLint to enforce restrictions on relative imports between packages.
+### Code of Conduct
 
-### Project Structure
+- **Be respectful** and inclusive
+- **Help others** learn and grow
+- **Provide constructive feedback**
+- **Follow the project's coding standards**
+- **Be patient** with new contributors
 
-- `packages/`: Contains the individual sub-packages of the project.
-  - `cli/`: The command-line interface.
-  - `core/`: The core backend logic for the Gemini CLI.
-- `docs/`: Contains all project documentation.
-- `scripts/`: Utility scripts for building, testing, and development tasks.
+### Communication
 
-For more detailed architecture, see `docs/architecture.md`.
+- **Use clear language** in issues and pull requests
+- **Provide context** for your suggestions
+- **Ask questions** if something is unclear
+- **Be open to feedback** and suggestions
 
-## Debugging
+## 📞 Getting Help
 
-### VS Code:
+If you need help with contributing:
 
-0.  Run the CLI to interactively debug in VS Code with `F5`
-1.  Start the CLI in debug mode from the root directory:
-    ```bash
-    npm run debug
-    ```
-    This command runs `node --inspect-brk dist/gemini.js` within the `packages/cli` directory, pausing execution until a debugger attaches. You can then open `chrome://inspect` in your Chrome browser to connect to the debugger.
-2.  In VS Code, use the "Attach" launch configuration (found in `.vscode/launch.json`).
+- **Check the documentation** in the repository
+- **Search existing issues** for similar problems
+- **Ask questions** in GitHub Discussions
+- **Join our community** chat (if available)
 
-Alternatively, you can use the "Launch Program" configuration in VS Code if you prefer to launch the currently open file directly, but 'F5' is generally recommended.
+## 🙏 Recognition
 
-To hit a breakpoint inside the sandbox container run:
+Contributors will be recognized in:
 
-```bash
-DEBUG=1 gemini
-```
+- **README.md**: List of contributors
+- **Release notes**: Credit for significant contributions
+- **GitHub contributors**: Automatic recognition on GitHub
 
-### React DevTools
+## 📄 License
 
-To debug the CLI's React-based UI, you can use React DevTools. Ink, the library used for the CLI's interface, is compatible with React DevTools version 4.x.
+By contributing to Enhanced CLI Agents, you agree that your contributions will be licensed under the MIT License.
 
-1.  **Start the Gemini CLI in development mode:**
+---
 
-    ```bash
-    DEV=true npm start
-    ```
-
-2.  **Install and run React DevTools version 4.28.5 (or the latest compatible 4.x version):**
-
-    You can either install it globally:
-
-    ```bash
-    npm install -g react-devtools@4.28.5
-    react-devtools
-    ```
-
-    Or run it directly using npx:
-
-    ```bash
-    npx react-devtools@4.28.5
-    ```
-
-    Your running CLI application should then connect to React DevTools.
-    ![](/docs/assets/connected_devtools.png)
-
-## Sandboxing
-
-### macOS Seatbelt
-
-On macOS, `gemini` uses Seatbelt (`sandbox-exec`) under a `permissive-open` profile (see `packages/cli/src/utils/sandbox-macos-permissive-open.sb`) that restricts writes to the project folder but otherwise allows all other operations and outbound network traffic ("open") by default. You can switch to a `restrictive-closed` profile (see `packages/cli/src/utils/sandbox-macos-restrictive-closed.sb`) that declines all operations and outbound network traffic ("closed") by default by setting `SEATBELT_PROFILE=restrictive-closed` in your environment or `.env` file. Available built-in profiles are `{permissive,restrictive}-{open,closed,proxied}` (see below for proxied networking). You can also switch to a custom profile `SEATBELT_PROFILE=<profile>` if you also create a file `.gemini/sandbox-macos-<profile>.sb` under your project settings directory `.gemini`.
-
-### Container-based Sandboxing (All Platforms)
-
-For stronger container-based sandboxing on macOS or other platforms, you can set `GEMINI_SANDBOX=true|docker|podman|<command>` in your environment or `.env` file. The specified command (or if `true` then either `docker` or `podman`) must be installed on the host machine. Once enabled, `npm run build:all` will build a minimal container ("sandbox") image and `npm start` will launch inside a fresh instance of that container. The first build can take 20-30s (mostly due to downloading of the base image) but after that both build and start overhead should be minimal. Default builds (`npm run build`) will not rebuild the sandbox.
-
-Container-based sandboxing mounts the project directory (and system temp directory) with read-write access and is started/stopped/removed automatically as you start/stop Gemini CLI. Files created within the sandbox should be automatically mapped to your user/group on host machine. You can easily specify additional mounts, ports, or environment variables by setting `SANDBOX_{MOUNTS,PORTS,ENV}` as needed. You can also fully customize the sandbox for your projects by creating the files `.gemini/sandbox.Dockerfile` and/or `.gemini/sandbox.bashrc` under your project settings directory (`.gemini`) and running `gemini` with `BUILD_SANDBOX=1` to trigger building of your custom sandbox.
-
-#### Proxied Networking
-
-All sandboxing methods, including macOS Seatbelt using `*-proxied` profiles, support restricting outbound network traffic through a custom proxy server that can be specified as `GEMINI_SANDBOX_PROXY_COMMAND=<command>`, where `<command>` must start a proxy server that listens on `:::8877` for relevant requests. See `docs/examples/proxy-script.md` for a minimal proxy that only allows `HTTPS` connections to `example.com:443` (e.g. `curl https://example.com`) and declines all other requests. The proxy is started and stopped automatically alongside the sandbox.
-
-## Manual Publish
-
-We publish an artifact for each commit to our internal registry. But if you need to manually cut a local build, then run the following commands:
-
-```
-npm run clean
-npm install
-npm run auth
-npm run prerelease:dev
-npm publish --workspaces
-```
+**Thank you for contributing to Enhanced CLI Agents! 🚀**

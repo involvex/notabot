@@ -35,14 +35,18 @@ describe('serverCommand', () => {
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     vi.restoreAllMocks();
+    // Clean up the global web server instance
+    const { serverCommand } = await import('./serverCommand.js');
+    // Stop the server if it's running
+    await serverCommand.action!(mockContext, 'stop');
   });
 
   describe('action', () => {
     it('should start server when no action provided', async () => {
       const result = await serverCommand.action!(mockContext, '');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
@@ -52,7 +56,7 @@ describe('serverCommand', () => {
 
     it('should start server when start action provided', async () => {
       const result = await serverCommand.action!(mockContext, 'start');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
@@ -63,10 +67,10 @@ describe('serverCommand', () => {
     it('should stop server when stop action provided', async () => {
       // First start the server
       await serverCommand.action!(mockContext, 'start');
-      
+
       // Then stop it
       const result = await serverCommand.action!(mockContext, 'stop');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
@@ -77,10 +81,10 @@ describe('serverCommand', () => {
     it('should show status when status action provided', async () => {
       // First start the server
       await serverCommand.action!(mockContext, 'start');
-      
+
       // Then check status
       const result = await serverCommand.action!(mockContext, 'status');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
@@ -90,7 +94,7 @@ describe('serverCommand', () => {
 
     it('should show help when help action provided', async () => {
       const result = await serverCommand.action!(mockContext, 'help');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
@@ -100,7 +104,7 @@ describe('serverCommand', () => {
 
     it('should show error for unknown action', async () => {
       const result = await serverCommand.action!(mockContext, 'unknown');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'error',
@@ -111,10 +115,10 @@ describe('serverCommand', () => {
     it('should show server already running message', async () => {
       // Start server first time
       await serverCommand.action!(mockContext, 'start');
-      
+
       // Try to start again
       const result = await serverCommand.action!(mockContext, 'start');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
@@ -124,7 +128,7 @@ describe('serverCommand', () => {
 
     it('should show server not running message for stop', async () => {
       const result = await serverCommand.action!(mockContext, 'stop');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
@@ -134,7 +138,7 @@ describe('serverCommand', () => {
 
     it('should show server not running message for status', async () => {
       const result = await serverCommand.action!(mockContext, 'status');
-      
+
       expect(result).toEqual({
         type: 'message',
         messageType: 'info',
@@ -146,19 +150,19 @@ describe('serverCommand', () => {
   describe('completion', () => {
     it('should return all actions when no partial input', async () => {
       const result = await serverCommand.completion!(mockContext, '');
-      
+
       expect(result).toEqual(['start', 'stop', 'status', 'help']);
     });
 
     it('should filter actions based on partial input', async () => {
       const result = await serverCommand.completion!(mockContext, 'st');
-      
+
       expect(result).toEqual(['start', 'stop', 'status']);
     });
 
     it('should return empty array for non-matching input', async () => {
       const result = await serverCommand.completion!(mockContext, 'xyz');
-      
+
       expect(result).toEqual([]);
     });
   });
@@ -167,8 +171,10 @@ describe('serverCommand', () => {
     it('should have correct name and description', () => {
       expect(serverCommand.name).toBe('server');
       expect(serverCommand.altNames).toEqual(['web', 'dashboard']);
-      expect(serverCommand.description).toBe('start web interface for viewing logs and managing CLI');
+      expect(serverCommand.description).toBe(
+        'start web interface for viewing logs and managing CLI',
+      );
       expect(serverCommand.kind).toBe('built-in');
     });
   });
-}); 
+});

@@ -12,6 +12,7 @@ import {
   PartListUnion,
   Content,
   GenerateContentResponse,
+  FunctionDeclaration,
 } from '@google/genai';
 import { getFolderStructure } from '../utils/getFolderStructure.js';
 import {
@@ -81,6 +82,15 @@ export function findIndexAfterFraction(
     }
   }
   return contentLengths.length;
+}
+
+/**
+ * Converts custom tool objects to the format expected by the Gemini API
+ */
+function convertToolsToGeminiFormat(customTools: Array<{ schema: FunctionDeclaration }>): Array<{ functionDeclarations: FunctionDeclaration[] }> {
+  return [{
+    functionDeclarations: customTools.map(customTool => customTool.schema)
+  }];
 }
 
 export class GeminiClient {
@@ -160,10 +170,13 @@ export class GeminiClient {
   }
 
   async setTools(): Promise<void> {
-    // Temporarily disable tools due to API compatibility issues
-    // TODO: Fix tool format for newer API version
-    console.warn('Tools temporarily disabled due to API compatibility issues');
-    this.getChat().setTools([]);
+    console.log('DEBUG: setTools called');
+    const toolRegistry = await this.config.getToolRegistry();
+    const tools = toolRegistry.getAllTools();
+    console.log('DEBUG: Tools found:', tools.length);
+    console.log('DEBUG: Tool names:', tools.map(t => t.name));
+    // @ts-expect-error - Tool type compatibility issue
+    this.getChat().setTools(tools);
   }
 
   async resetChat(): Promise<void> {
@@ -280,14 +293,19 @@ export class GeminiClient {
             },
           }
         : this.generateContentConfig;
+
+      // Get tools and convert them to the format expected by Gemini API
+      const toolRegistry = await this.config.getToolRegistry();
+      const customTools = toolRegistry.getAllTools();
+      const geminiTools = convertToolsToGeminiFormat(customTools);
+
       return new GeminiChat(
         this.config,
         this.getContentGenerator(),
         {
           systemInstruction,
           ...generateContentConfigWithThinking,
-          // Temporarily disable tools due to API compatibility issues
-          // tools,
+          tools: geminiTools,
         },
         history,
       );

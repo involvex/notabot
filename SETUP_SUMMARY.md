@@ -3,28 +3,33 @@
 ## 🎯 What We've Accomplished
 
 ### ✅ **Core CLI Installation**
+
 - Successfully installed the CLI globally as `notabot-full`
 - Verified the CLI is working with `notabot-full --help`
 - Updated `package.json` to include both `gemini` and `notabot-full` commands
 
 ### ✅ **Project Updates**
+
 - Updated from version 0.1.14 to 0.1.15
 - Fixed build issues and resolved all compilation errors
 - Successfully built the project and bundle
 - Temporarily disabled tools due to API compatibility issues (with clear TODO comments)
 
 ### ✅ **Folder Structure Cleanup**
+
 - Removed temporary test files (`test-*.js`, `test-*.txt`)
 - Cleaned up temporary configuration files
 - Removed temporary documentation files from `docs/` directory
 - Maintained essential project structure and documentation
 
 ### ✅ **Documentation Preparation**
+
 - Created comprehensive `NOTABOT_README.md` for the project
 - Documented installation, usage, and development instructions
 - Included feature descriptions and configuration details
 
 ### ✅ **GitHub Repository Setup**
+
 - Created `init-github-repo.sh` (Bash) for Linux/macOS users
 - Created `init-github-repo.ps1` (PowerShell) for Windows users
 - Both scripts handle repository creation, topics, and initial release
@@ -32,6 +37,7 @@
 ## 🚀 **Current Status**
 
 ### **Working Features**
+
 - ✅ Global CLI installation (`notabot-full`)
 - ✅ Basic CLI functionality (help, version, etc.)
 - ✅ Build system working
@@ -40,10 +46,12 @@
 - ✅ Authentication system
 
 ### **Known Issues**
+
 - ⚠️ Tools API compatibility issue (temporarily disabled)
 - ⚠️ API expects different tool format than current implementation
 
 ### **Next Steps**
+
 1. **Fix Tools API Issue**: Research and implement correct tool format for newer Gemini API
 2. **Create GitHub Repository**: Run the initialization script
 3. **Update Documentation**: Replace placeholder URLs with actual repository URL
@@ -68,12 +76,14 @@ notabot-cli/
 ## 🔧 **Available Commands**
 
 ### **Global Installation**
+
 ```bash
 npm install -g .
 notabot-full --help
 ```
 
 ### **Development**
+
 ```bash
 npm run build
 npm run bundle
@@ -81,6 +91,7 @@ npm test
 ```
 
 ### **GitHub Repository Setup**
+
 ```bash
 # Linux/macOS
 ./init-github-repo.sh
@@ -116,10 +127,11 @@ The project is now ready for GitHub repository creation. The initialization scri
 ## 🚀 **Next Actions**
 
 1. **Run the GitHub initialization script**:
+
    ```bash
    # For Windows
    .\init-github-repo.ps1
-   
+
    # For Linux/macOS
    ./init-github-repo.sh
    ```
@@ -133,4 +145,4 @@ The project is now ready for GitHub repository creation. The initialization scri
 **Status**: ✅ Ready for GitHub repository creation
 **CLI Status**: ✅ Working globally as `notabot-full`
 **Build Status**: ✅ All builds successful
-**Documentation**: ✅ Complete and ready 
+**Documentation**: ✅ Complete and ready
