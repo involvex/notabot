@@ -1,33 +1,28 @@
-# Notabot CLI
+# Notabot CLI 🚀
 
-A powerful command-line interface built on top of the Gemini CLI, providing enhanced functionality and tools for developers.
+An enhanced command-line interface built on top of Gemini CLI, providing powerful tools and an improved user experience.
 
-## 🚀 Features
+## 🌟 Features
 
-- **Global Installation**: Install as `notabot-full` for system-wide access
-- **Enhanced Tools**: Extended toolset beyond the base Gemini CLI
-- **Custom Commands**: Additional commands for file operations, git integration, and more
-- **Theme Support**: Customizable themes and UI enhancements
-- **Web Server Integration**: Built-in web server for remote access
-- **Image Enhancement**: Advanced image processing capabilities
+- **Global Installation**: Install as `notabot-full` for easy access
+- **Enhanced Commands**: Additional commands for better productivity
+- **Custom Themes**: Beautiful UI themes and customization options
+- **Web Server Integration**: Built-in web server capabilities
+- **Image Enhancement**: Advanced image processing features
+- **Tool Integration**: Comprehensive tool ecosystem
+- **Memory Management**: Smart memory compression and management
+- **Git Integration**: Seamless Git workflow integration
 
 ## 📦 Installation
 
+### Prerequisites
+- Node.js 20+ 
+- npm or yarn
+
 ### Global Installation
-
-```bash
-# Install the CLI globally
-npm install -g .
-
-# Use as notabot-full
-notabot-full --help
-```
-
-### Development Installation
-
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/involvex/notabot-cli.git
 cd notabot-cli
 
 # Install dependencies
@@ -36,139 +31,108 @@ npm install
 # Build the project
 npm run build
 
-# Install globally for development
+# Install globally
 npm install -g .
+
+# Verify installation
+notabot-full --help
 ```
 
-## 🛠️ Usage
+### Alternative: Direct Installation
+```bash
+npm install -g https://github.com/involvex/notabot-cli.git
+```
 
-### Basic Usage
+## 🚀 Quick Start
 
 ```bash
-# Interactive mode
+# Start the CLI
 notabot-full
 
-# Non-interactive mode with prompt
-notabot-full --prompt "List all files in the current directory"
+# Or with a prompt
+notabot-full -p "Hello, how can you help me?"
 
-# Debug mode
-notabot-full --debug
-
-# YOLO mode (automatically accept all actions)
-notabot-full --yolo
+# Get help
+notabot-full --help
 ```
 
-### Available Commands
+## 🛠️ Available Commands
 
-- `notabot-full --help` - Show help information
-- `notabot-full --version` - Show version information
-- `notabot-full --debug` - Enable debug mode
-- `notabot-full --yolo` - Enable YOLO mode (auto-accept actions)
+### Core Commands
+- `/help` - Show available commands
+- `/about` - Display CLI information
+- `/auth` - Authentication management
+- `/clear` - Clear the conversation
+- `/quit` - Exit the CLI
+
+### Enhanced Commands
+- `/cd` - Change directory with smart suggestions
+- `/git` - Git workflow integration
+- `/server` - Web server management
+- `/image` - Image processing and enhancement
+- `/allfiles` - List all files in current directory
+- `/yolo` - Quick actions and shortcuts
+
+### Theme and UI
+- `/theme` - Change UI themes
+- `/stats` - Display usage statistics
+- `/memory` - Memory management
+- `/tools` - Tool configuration
+
+## ⚙️ Configuration
+
+### Environment Variables
+Copy `env.example` to `.env` and configure:
+
+```bash
+# OAuth Configuration (optional)
+OAUTH_CLIENT_ID=your_oauth_client_id_here
+OAUTH_CLIENT_SECRET=your_oauth_client_secret_here
+
+# Gemini API Configuration
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional: Proxy Configuration
+HTTP_PROXY=http://proxy.example.com:8080
+HTTPS_PROXY=http://proxy.example.com:8080
+
+# Optional: Debug Mode
+DEBUG=1
+```
+
+### Custom Configuration
+Create a `.gemini/config.yaml` file for advanced settings:
+
+```yaml
+# Example configuration
+model: "gemini-2.5-flash"
+theme: "default"
+debug: false
+```
+
+## 🎨 Themes
+
+Notabot CLI supports multiple themes:
+- Default
+- Dracula
+- GitHub Dark/Light
+- Atom One Dark
+- And many more...
+
+Change themes with: `/theme`
 
 ## 🔧 Development
 
-### Project Structure
+### Prerequisites
+- Node.js 20+
+- npm or yarn
 
-```
-notabot-cli/
-├── packages/
-│   ├── cli/          # Main CLI application
-│   └── core/         # Core functionality and tools
-├── docs/             # Documentation
-├── scripts/          # Build and utility scripts
-└── bundle/           # Bundled application
-```
-
-### Build Commands
-
+### Setup
 ```bash
-# Build all packages
-npm run build
+# Clone the repository
+git clone https://github.com/involvex/notabot-cli.git
+cd notabot-cli
 
-# Build and bundle for distribution
-npm run bundle
-
-# Run tests
-npm test
-
-# Run linting
-npm run lint
-
-# Run type checking
-npm run typecheck
-```
-
-### Key Features
-
-#### Enhanced Tools
-- File operations (read, write, list, search)
-- Git integration
-- Web server capabilities
-- Image processing
-- Shell command execution
-
-#### Custom Commands
-- `cd` - Change directory with enhanced functionality
-- `git` - Git operations and status
-- `server` - Web server management
-- `image` - Image processing and enhancement
-- `yolo` - YOLO mode for automated actions
-
-#### Theme Support
-- Customizable UI themes
-- Color scheme management
-- Visual enhancements
-
-## 🔧 Configuration
-
-The CLI uses configuration files for customization:
-
-- `.gemini/` - User configuration directory
-- `gemini.md` - Project-specific configuration
-- `notabot-config.json` - Custom configuration
-
-## 🚀 Advanced Features
-
-### Web Server Integration
-```bash
-# Start web server
-notabot-full --server
-
-# Access via web interface
-# http://localhost:3000
-```
-
-### Image Enhancement
-```bash
-# Process images with AI enhancement
-notabot-full --image-enhance path/to/image.jpg
-```
-
-### Git Integration
-```bash
-# Git operations with enhanced features
-notabot-full --git-status
-notabot-full --git-commit "message"
-```
-
-## 📚 Documentation
-
-- [User Guide](docs/README.md)
-- [API Documentation](docs/core/)
-- [Tool Documentation](docs/tools/)
-- [Examples](docs/examples/)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-### Development Setup
-
-```bash
 # Install dependencies
 npm install
 
@@ -178,9 +142,46 @@ npm run build
 # Run tests
 npm test
 
-# Start development server
+# Start development mode
 npm run start
 ```
+
+### Project Structure
+```
+notabot-cli/
+├── packages/
+│   ├── cli/          # CLI application
+│   ├── core/         # Core functionality
+│   └── vscode-ide-companion/  # VS Code integration
+├── docs/             # Documentation
+├── scripts/          # Build scripts
+└── integration-tests/ # Integration tests
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📚 Documentation
+
+- [CLI Commands](docs/cli/commands.md)
+- [Configuration Guide](docs/cli/configuration.md)
+- [Authentication](docs/cli/authentication.md)
+- [Themes](docs/cli/themes.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
+## 🔗 Links
+
+- **Repository**: https://github.com/involvex/notabot-cli
+- **Issues**: https://github.com/involvex/notabot-cli/issues
+- **Discussions**: https://github.com/involvex/notabot-cli/discussions
 
 ## 📄 License
 
@@ -188,16 +189,16 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 🙏 Acknowledgments
 
-- Built on top of the [Gemini CLI](https://github.com/google-gemini/gemini-cli)
-- Enhanced with additional tools and features
-- Community-driven development
+- Built on top of [Google Gemini CLI](https://github.com/google-gemini/gemini-cli)
+- Powered by Google's Gemini AI models
+- Community contributors and supporters
 
-## 📞 Support
+## 🆘 Support
 
-- [Issues](https://github.com/your-org/notabot-cli/issues)
-- [Discussions](https://github.com/your-org/notabot-cli/discussions)
-- [Documentation](docs/)
+- **Documentation**: Check the [docs](docs/) folder
+- **Issues**: Report bugs on [GitHub Issues](https://github.com/involvex/notabot-cli/issues)
+- **Discussions**: Join conversations on [GitHub Discussions](https://github.com/involvex/notabot-cli/discussions)
 
 ---
 
-**Notabot CLI** - Enhanced command-line interface for developers 
+**Happy coding with Notabot CLI! 🚀** 
