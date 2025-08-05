@@ -100,7 +100,7 @@ class WebServer {
     this.server = null;
     this.io = null;
     this.port = CONFIG.defaultSettings.webServerPort;
-    this.isRunning = false;
+    this._isRunning = false;
   }
 
   async start(port = this.port) {
@@ -213,7 +213,7 @@ class WebServer {
       });
 
       this.server.listen(port, () => {
-        this.isRunning = true;
+        this._isRunning = true;
         this.port = port;
         console.log(`${colors.green}🌐 Web server started on http://localhost:${port}${colors.reset}`);
       });
@@ -226,15 +226,19 @@ class WebServer {
   stop() {
     if (this.server) {
       this.server.close();
-      this.isRunning = false;
+      this._isRunning = false;
       console.log(`${colors.yellow}Web server stopped${colors.reset}`);
     }
+  }
+
+  isRunning() {
+    return this._isRunning;
   }
 
   getStatus() {
     const stats = this.agent.history.getSessionStats();
     return {
-      isRunning: this.isRunning,
+      isRunning: this._isRunning,
       port: this.port,
       agentName: CONFIG.name,
       version: CONFIG.version,
@@ -1469,8 +1473,8 @@ class NotABotAgent {
         this.settings.set('webServerEnabled', false);
         break;
       case 'status':
-        console.log(`${colors.blue}Web server status: ${this.webServer.isRunning ? 'Running' : 'Stopped'}${colors.reset}`);
-        if (this.webServer.isRunning) {
+        console.log(`${colors.blue}Web server status: ${this.webServer.isRunning() ? 'Running' : 'Stopped'}${colors.reset}`);
+        if (this.webServer.isRunning()) {
           console.log(`${colors.blue}URL: http://localhost:${this.webServer.port}${colors.reset}`);
         }
         break;
@@ -1864,7 +1868,7 @@ class NotABotAgent {
     console.log(`  Session duration: ${stats.sessionDuration} seconds`);
     console.log(`  Current directory: ${this.currentDirectory}`);
     console.log(`  YOLO mode: ${this.yoloMode.isEnabled() ? 'Enabled' : 'Disabled'}`);
-    console.log(`  Web server: ${this.webServer.isRunning ? 'Running' : 'Stopped'}`);
+    console.log(`  Web server: ${this.webServer.isRunning() ? 'Running' : 'Stopped'}`);
   }
 
   showContext() {
@@ -1911,7 +1915,7 @@ class NotABotAgent {
     console.log(`  Total messages: ${stats.totalMessages}`);
     console.log(`  Session duration: ${stats.sessionDuration} seconds`);
     console.log(`  YOLO mode: ${this.yoloMode.isEnabled() ? 'Enabled' : 'Disabled'}`);
-    console.log(`  Web server: ${this.webServer.isRunning ? 'Running' : 'Stopped'}`);
+    console.log(`  Web server: ${this.webServer.isRunning() ? 'Running' : 'Stopped'}`);
     
     // Save session data to database
     if (this.database.initialized) {
@@ -1932,7 +1936,7 @@ class NotABotAgent {
       await this.database.close();
     }
     
-    if (this.webServer.isRunning) {
+    if (this.webServer.isRunning()) {
       this.webServer.stop();
     }
     
