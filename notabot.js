@@ -128,6 +128,49 @@ class WebServer {
         res.json(this.agent.settings.settings);
       });
 
+      app.get('/api/indexed-files', (req, res) => {
+        try {
+          const files = this.agent.modalDb.getAllIndexedFiles();
+          res.json({ success: true, files: files });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      app.get('/api/database-stats', (req, res) => {
+        try {
+          const modalStats = this.agent.modalDb.getStats();
+          const dbStats = this.agent.database.initialized ? 
+            this.agent.database.getDatabaseStats() : null;
+          
+          res.json({
+            success: true,
+            modalStats: modalStats,
+            databaseStats: dbStats
+          });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      app.post('/api/index-directory', express.json(), (req, res) => {
+        try {
+          const { path } = req.body;
+          const dirPath = path || this.agent.currentDirectory;
+          
+          // Start indexing in background
+          this.agent.modalDb.indexDirectory(dirPath, [
+            'node_modules', '.git', '.vscode', 'dist', 'build', '.env'
+          ]).then(() => {
+            res.json({ success: true, message: 'Indexing completed' });
+          }).catch(error => {
+            res.status(500).json({ success: false, error: error.message });
+          });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
       // Settings management routes
       app.post('/api/settings', express.json(), (req, res) => {
         try {
@@ -361,6 +404,21 @@ class WebServer {
                 <button class="btn btn-danger" onclick="stopWebServer()">Stop Web Server</button>
             </div>
         </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>🗄️ Database Overview</h2>
+                <div id="database-stats"></div>
+                <button class="btn btn-primary" onclick="loadDatabaseStats()">Refresh Stats</button>
+            </div>
+            
+            <div class="card">
+                <h2>📁 Indexed Files</h2>
+                <div id="indexed-files"></div>
+                <button class="btn btn-success" onclick="loadIndexedFiles()">Refresh Files</button>
+                <button class="btn btn-warning" onclick="indexCurrentDirectory()">Index Current Directory</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -487,6 +545,107 @@ class WebServer {
                 </div>
             \`).join('');
         });
+        
+        // Load database data
+        loadDatabaseStats();
+        loadIndexedFiles();
+        
+        function loadDatabaseStats() {
+            fetch('/api/database-stats').then(r => r.json()).then(data => {
+                if (data.success) {
+                    const statsDiv = document.getElementById('database-stats');
+                    const modalStats = data.modalStats;
+                    const dbStats = data.databaseStats;
+                    
+                    let html = '<div class="status">';
+                    html += '<strong>Modal Database:</strong><br>';
+                    html += \`Indexed Files: \${modalStats.indexedFiles || 0}<br>\`;
+                    html += \`Total Prompts: \${modalStats.totalPrompts || 0}<br>\`;
+                    html += \`Recent Prompts: \${modalStats.recentPrompts || 0}<br>\`;
+                    html += \`Database Size: \${((modalStats.databaseSize || 0) / 1024).toFixed(2)} KB<br>\`;
+                    
+                    if (dbStats) {
+                        html += '<br><strong>SQLite Database:</strong><br>';
+                        html += \`Conversations: \${dbStats.conversations_count || 0}<br>\`;
+                        html += \`Sessions: \${dbStats.sessions_count || 0}<br>\`;
+                        html += \`Settings: \${dbStats.settings_count || 0}<br>\`;
+                        html += \`Indexed Files: \${dbStats.indexed_files_count || 0}<br>\`;
+                        html += \`Search History: \${dbStats.search_history_count || 0}<br>\`;
+                        html += \`Auto Mode Logs: \${dbStats.auto_mode_logs_count || 0}<br>\`;
+                        html += \`Web Server Logs: \${dbStats.web_server_logs_count || 0}<br>\`;
+                        html += \`Recent Conversations (24h): \${dbStats.recent_conversations_24h || 0}<br>\`;
+                        html += \`Database Size: \${((dbStats.database_size_bytes || 0) / 1024).toFixed(2)} KB\`;
+                    }
+                    
+                    html += '</div>';
+                    statsDiv.innerHTML = html;
+                }
+            }).catch(error => {
+                console.error('Error loading database stats:', error);
+            });
+        }
+        
+        function loadIndexedFiles() {
+            fetch('/api/indexed-files').then(r => r.json()).then(data => {
+                if (data.success) {
+                    const filesDiv = document.getElementById('indexed-files');
+                    const files = data.files || [];
+                    
+                    if (files.length === 0) {
+                        filesDiv.innerHTML = '<div class="status">No indexed files found</div>';
+                        return;
+                    }
+                    
+                    let html = '<div class="status">';
+                    html += \`<strong>Total Indexed Files: \${files.length}</strong><br><br>\`;
+                    
+                    files.slice(0, 10).forEach(file => {
+                        const size = (file.size / 1024).toFixed(2);
+                        const date = new Date(file.lastAccessed).toLocaleDateString();
+                        html += \`<div style="margin: 5px 0; padding: 5px; border-left: 3px solid #2196F3;">\`;
+                        html += \`<strong>\${file.name}</strong> (\${file.language || 'Unknown'})<br>\`;
+                        html += \`Size: \${size} KB | Lines: \${file.lines} | Modified: \${date}<br>\`;
+                        html += \`<small style="color: #888;">\${file.path}</small>\`;
+                        html += '</div>';
+                    });
+                    
+                    if (files.length > 10) {
+                        html += \`<br><em>... and \${files.length - 10} more files</em>\`;
+                    }
+                    
+                    html += '</div>';
+                    filesDiv.innerHTML = html;
+                }
+            }).catch(error => {
+                console.error('Error loading indexed files:', error);
+            });
+        }
+        
+        function indexCurrentDirectory() {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Indexing...';
+            button.disabled = true;
+            
+            fetch('/api/index-directory', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: '' })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    alert('Indexing completed successfully!');
+                    loadIndexedFiles();
+                    loadDatabaseStats();
+                } else {
+                    alert('Indexing failed: ' + data.error);
+                }
+            }).catch(error => {
+                alert('Indexing failed: ' + error.message);
+            }).finally(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
     </script>
 </body>
 </html>

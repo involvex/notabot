@@ -109,18 +109,35 @@ export class ModalDatabase {
    * Index all files in a directory
    */
   async indexDirectory(dirPath, excludePatterns = []) {
-    const files = await this.scanDirectory(dirPath, excludePatterns);
-    const results = [];
-    
-    for (const file of files) {
-      const indexed = await this.indexFile(file);
-      if (indexed) {
-        results.push(indexed);
+    try {
+      const files = await this.scanDirectory(dirPath, excludePatterns);
+      const results = [];
+      
+      console.log(`📁 Found ${files.length} files to index...`);
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const indexed = await this.indexFile(file);
+          if (indexed) {
+            results.push(indexed);
+          }
+          
+          // Progress indicator
+          if ((i + 1) % 10 === 0 || i === files.length - 1) {
+            console.log(`📁 Indexed ${i + 1}/${files.length} files...`);
+          }
+        } catch (error) {
+          console.error(`Error indexing ${file}:`, error.message);
+        }
       }
+      
+      console.log(`📁 Indexed ${results.length} files in ${dirPath}`);
+      return results;
+    } catch (error) {
+      console.error(`Error indexing directory ${dirPath}:`, error.message);
+      return [];
     }
-    
-    console.log(`📁 Indexed ${results.length} files in ${dirPath}`);
-    return results;
   }
 
   /**
@@ -309,6 +326,23 @@ export class ModalDatabase {
       indexedFiles: Object.keys(this.data.files).length,
       databaseSize: JSON.stringify(this.data).length
     };
+  }
+
+  getAllIndexedFiles(limit = 100) {
+    const files = Object.values(this.data.files);
+    return files
+      .sort((a, b) => new Date(b.lastAccessed) - new Date(a.lastAccessed))
+      .slice(0, limit)
+      .map(file => ({
+        path: file.path,
+        name: file.name,
+        extension: file.extension,
+        size: file.size,
+        language: file.language,
+        lines: file.lines,
+        modified: file.modified,
+        lastAccessed: file.lastAccessed
+      }));
   }
 
   /**
