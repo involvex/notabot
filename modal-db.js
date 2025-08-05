@@ -144,6 +144,61 @@ export class ModalDatabase {
    * Scan directory for files
    */
   async scanDirectory(dirPath, excludePatterns = []) {
+    // Try Windows indexing first, fallback to manual scan
+    if (process.platform === 'win32') {
+      try {
+        const windowsFiles = await this.scanWithWindowsIndex(dirPath, excludePatterns);
+        if (windowsFiles.length > 0) {
+          console.log(`🔍 Using Windows index: found ${windowsFiles.length} files`);
+          return windowsFiles;
+        }
+      } catch (error) {
+        console.log(`⚠️ Windows index failed, using manual scan: ${error.message}`);
+      }
+    }
+    
+    // Fallback to manual directory scanning
+    return this.scanDirectoryManual(dirPath, excludePatterns);
+  }
+
+  async scanWithWindowsIndex(dirPath, excludePatterns = []) {
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+    
+    try {
+      // Use PowerShell to query Windows Search
+      const searchQuery = `Get-ChildItem -Path "${dirPath}" -Recurse -File | Where-Object { $_.Extension -match '\\.(js|ts|py|java|cpp|c|cs|php|rb|go|rs|swift|kt|scala|html|css|scss|json|xml|md|txt)$' } | Select-Object FullName, Name, Extension, Length, LastWriteTime | ConvertTo-Json`;
+      
+      const { stdout } = await execAsync(`powershell -Command "${searchQuery}"`, { 
+        timeout: 30000, // 30 second timeout
+        windowsHide: true 
+      });
+      
+      if (!stdout.trim()) {
+        return [];
+      }
+      
+      const files = JSON.parse(stdout);
+      const fileList = Array.isArray(files) ? files : [files];
+      
+      // Filter out excluded patterns
+      return fileList
+        .filter(file => {
+          const fullPath = file.FullName;
+          return !excludePatterns.some(pattern => 
+            fullPath.includes(pattern) || path.basename(fullPath) === pattern
+          );
+        })
+        .map(file => file.FullName);
+        
+    } catch (error) {
+      console.error('Windows index scan failed:', error.message);
+      return [];
+    }
+  }
+
+  scanDirectoryManual(dirPath, excludePatterns = []) {
     const files = [];
     
     function scan(currentPath) {
@@ -343,6 +398,42 @@ export class ModalDatabase {
         modified: file.modified,
         lastAccessed: file.lastAccessed
       }));
+  }
+
+  async checkWindowsIndexStatus() {
+    if (process.platform !== 'win32') {
+      return { available: false, reason: 'Not Windows platform' };
+    }
+
+    try {
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+      
+      // Check if Windows Search service is running
+      const { stdout } = await execAsync('powershell -Command "Get-Service -Name WSearch | Select-Object Status"', {
+        timeout: 10000,
+        windowsHide: true
+      });
+      
+      const isRunning = stdout.toLowerCase().includes('running');
+      
+      if (!isRunning) {
+        return { available: false, reason: 'Windows Search service not running' };
+      }
+      
+      // Test a simple search query
+      const testQuery = `Get-ChildItem -Path "$env:USERPROFILE" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 | ConvertTo-Json`;
+      await execAsync(`powershell -Command "${testQuery}"`, {
+        timeout: 10000,
+        windowsHide: true
+      });
+      
+      return { available: true, reason: 'Windows index is available and working' };
+      
+    } catch (error) {
+      return { available: false, reason: `Windows index test failed: ${error.message}` };
+    }
   }
 
   /**

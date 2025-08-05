@@ -1588,6 +1588,10 @@ class NotABotAgent {
         await this.handleAnalyzeFiles(args);
         break;
       
+      case 'windows-index':
+        await this.handleWindowsIndex(args);
+        break;
+      
       case 'db':
         this.handleDatabase(args);
         break;
@@ -2095,6 +2099,46 @@ class NotABotAgent {
     }
   }
 
+  async handleWindowsIndex(args) {
+    try {
+      const subCommand = args[0] || 'status';
+      
+      switch (subCommand) {
+        case 'status':
+          console.log(`${colors.blue}🔍 Checking Windows Index Status:${colors.reset}`);
+          const status = await this.modalDb.checkWindowsIndexStatus();
+          
+          if (status.available) {
+            console.log(`${colors.green}✅ Windows Index: ${status.reason}${colors.reset}`);
+            console.log(`  🚀 Indexing will use Windows Search for faster results`);
+          } else {
+            console.log(`${colors.yellow}⚠️ Windows Index: ${status.reason}${colors.reset}`);
+            console.log(`  📁 Will use manual directory scanning instead`);
+          }
+          break;
+          
+        case 'test':
+          console.log(`${colors.blue}🧪 Testing Windows Index with current directory...${colors.reset}`);
+          const testFiles = await this.modalDb.scanWithWindowsIndex(this.currentDirectory, [
+            'node_modules', '.git', '.vscode', 'dist', 'build', '.env'
+          ]);
+          console.log(`${colors.green}✅ Found ${testFiles.length} files using Windows index${colors.reset}`);
+          if (testFiles.length > 0) {
+            console.log(`  📁 Sample files:`);
+            testFiles.slice(0, 5).forEach(file => {
+              console.log(`    - ${path.basename(file)}`);
+            });
+          }
+          break;
+          
+        default:
+          console.log(`${colors.yellow}Usage: /windows-index [status|test]${colors.reset}`);
+      }
+    } catch (error) {
+      console.log(`${colors.red}❌ Windows index operation failed: ${error.message}${colors.reset}`);
+    }
+  }
+
   showHelp() {
     console.log(`${colors.bright}Available Commands:${colors.reset}`);
     console.log(`  /help       - Show this help message`);
@@ -2107,6 +2151,7 @@ class NotABotAgent {
     console.log(`  /debug      - Toggle debug mode`);
     console.log(`  /stats      - Show session statistics`);
     console.log(`  /analyze    - Analyze code files in directory`);
+    console.log(`  /windows-index [status|test] - Check Windows index status`);
     console.log(`  /context    - Show current context`);
     console.log(`  /reset      - Reset session`);
     console.log(`  /yolo       - Toggle YOLO mode`);
