@@ -1,247 +1,95 @@
-# 🤖 NotABot - Full Automated CLI Agent
+# NotABot GitHub Pages
 
-[![NotABot CI](https://github.com/yourusername/notabot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/notabot/actions/workflows/ci.yml)
+This is the GitHub Pages branch for the NotABot project. This branch contains the static website files that are served at [https://involvex.github.io/notabot](https://involvex.github.io/notabot).
 
-**NotABot** is a comprehensive CLI agent with AI integration, OAuth authentication, persistent database storage, and advanced automation capabilities.
+## 📁 Files
 
-## ✨ Features
+- `index.html` - Main landing page with project overview
+- `docs.html` - Comprehensive documentation page
+- `README.md` - This file
 
-### 🧠 **AI Integration**
-- **Gemini API** integration for intelligent responses
-- **OAuth Authentication** with Google accounts
-- **Context-aware** conversations with memory
-- **Multi-modal** capabilities
+## 🚀 Features
 
-### 🗄️ **Database System**
-- **SQLite database** for persistent storage
-- **Conversation history** with search capabilities
-- **Session tracking** and statistics
-- **Settings persistence** across sessions
-- **User profiles** and preferences
+### Main Landing Page (`index.html`)
+- **Modern Design**: Beautiful gradient background with responsive layout
+- **Feature Showcase**: Interactive cards highlighting key features
+- **Installation Guide**: Quick start instructions
+- **Command Reference**: Tabbed interface with all available commands
+- **Statistics**: Project metrics and version information
+- **Documentation Links**: Direct links to detailed guides
 
-### 🔐 **Authentication**
-- **Google OAuth** integration
-- **Secure token storage**
-- **Automatic authentication**
-- **User profile management**
+### Documentation Page (`docs.html`)
+- **Complete Guide**: Step-by-step instructions for all features
+- **OAuth Setup**: Detailed Google OAuth configuration
+- **Database System**: SQLite database features and commands
+- **Web Dashboard**: Web interface setup and usage
+- **Auto Mode**: Automation configuration
+- **Tool System**: Available tools and usage examples
+- **Troubleshooting**: Common issues and solutions
+- **Contributing**: Development guidelines
 
-### 🤖 **Automation**
-- **Auto mode** for scheduled tasks
-- **Web dashboard** for remote control
-- **Tool integration** for system operations
-- **YOLO mode** for advanced operations
+## 🎨 Design Features
 
-### 🌐 **Web Interface**
-- **Real-time dashboard** at `http://localhost:4000`
-- **Settings management** via web UI
-- **Live monitoring** of agent activity
-- **Remote control** capabilities
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Modern UI**: Clean, professional appearance
+- **Interactive Elements**: Hover effects, smooth transitions
+- **Accessibility**: Proper semantic HTML and ARIA labels
+- **Performance**: Optimized CSS and minimal JavaScript
+- **Cross-browser**: Compatible with all modern browsers
 
-## 🚀 Quick Start
+## 🔧 Technical Details
 
-### Installation
+- **HTML5**: Semantic markup
+- **CSS3**: Modern styling with gradients and animations
+- **Font Awesome**: Icons for visual appeal
+- **Vanilla JavaScript**: Lightweight interactivity
+- **No Dependencies**: Self-contained for reliability
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/notabot.git
-cd notabot
+## 📝 Content Sections
 
-# Install dependencies
-npm install
+### Landing Page
+1. **Header**: Project title and description
+2. **Features**: Six key feature cards
+3. **Installation**: Quick install instructions
+4. **Quick Start**: Basic usage examples
+5. **Commands**: Tabbed command reference
+6. **Statistics**: Project metrics
+7. **Documentation**: Links to detailed guides
+8. **Contributing**: Community involvement
 
-# Install globally
-npm install -g .
-```
+### Documentation Page
+1. **Quick Start**: Basic setup guide
+2. **OAuth Setup**: Authentication configuration
+3. **Database System**: Storage and management
+4. **Web Dashboard**: Remote interface
+5. **Auto Mode**: Automation features
+6. **Tool System**: Available tools
+7. **YOLO Mode**: Advanced operations
+8. **Troubleshooting**: Common issues
+9. **Installation**: Multiple installation methods
+10. **Contributing**: Development guidelines
 
-### First Run
+## 🌐 Deployment
 
-```bash
-# Start NotABot
-notabot
+This branch is automatically deployed to GitHub Pages when changes are pushed. The site is available at:
 
-# Or use the alias
-nb
-```
+**https://involvex.github.io/notabot**
 
-### Authentication
+## 🔄 Updates
 
-```bash
-# Login with Google OAuth
-/login
+To update the GitHub Pages site:
 
-# Or set API key
-/auth YOUR_GEMINI_API_KEY
-```
+1. Make changes to the HTML files
+2. Commit and push to the `gh-pages` branch
+3. GitHub Pages will automatically rebuild and deploy
 
-## 📖 Documentation
+## 📚 Related Links
 
-Comprehensive documentation is available in the [`docs/`](./docs/) directory:
-
-- **[📚 Documentation Index](./docs/README.md)** - Complete documentation
-- **[🚀 Quick Start](./docs/setup/QUICK_START.md)** - Get started in minutes
-- **[🔐 OAuth Setup](./docs/oauth/OAUTH_SETUP.md)** - Authentication guide
-- **[🗄️ Database Features](./docs/database/DATABASE_FEATURES.md)** - Database system
-- **[⚡ Enhanced Features](./docs/features/ENHANCED-FEATURES-README.md)** - Advanced capabilities
-
-## 🎯 Key Commands
-
-### Basic Commands
-```
-/help          - Show all commands
-/login         - Login with Google OAuth
-/auth          - Set API key
-/quit          - Exit NotABot
-```
-
-### Database Commands
-```
-/db status              - Database statistics
-/db conversations [10]  - Recent conversations
-/db search <query>      - Search history
-/db cleanup [30]        - Clean old data
-/db backup [path]       - Create backup
-```
-
-### Web Interface
-```
-/webserver start        - Start web dashboard
-/webserver stop         - Stop web dashboard
-/webserver status       - Check status
-```
-
-### Automation
-```
-/auto enable            - Enable auto mode
-/auto disable           - Disable auto mode
-/auto status            - Check status
-```
-
-### Tools
-```
-@list_directory path=.  - List files
-@read_file path=file    - Read file
-@write_file path=file   - Write file
-@run_shell_command cmd  - Execute command
-```
-
-## 🏗️ Project Structure
-
-```
-notabot/
-├── docs/                    # 📚 Documentation
-│   ├── setup/              # Installation guides
-│   ├── oauth/              # Authentication docs
-│   ├── database/           # Database documentation
-│   ├── features/           # Feature documentation
-│   └── api/                # API documentation
-├── scripts/                # 🔧 Utility scripts
-│   ├── setup-oauth.js      # OAuth setup
-│   ├── test-database.js    # Database testing
-│   └── set-oauth-env.ps1  # Environment setup
-├── notabot.js              # 🚀 Main application
-├── database.js             # 🗄️ Database system
-├── oauth-auth.js           # 🔐 OAuth authentication
-├── autocomplete.js         # ⌨️ Autocomplete system
-├── modal-db.js            # 📁 File indexing
-└── package.json           # ⚙️ Project configuration
-```
-
-## 🔧 Development
-
-### Prerequisites
-- **Node.js** 16+ 
-- **npm** or **yarn**
-- **Git**
-
-### Setup Development Environment
-
-```bash
-# Clone repository
-git clone https://github.com/yourusername/notabot.git
-cd notabot
-
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Start development
-npm run start
-```
-
-### Database Setup
-
-```bash
-# Test database functionality
-node scripts/test-database.js
-
-# Setup OAuth environment
-.\scripts\set-oauth-env.ps1
-```
-
-## 🧪 Testing
-
-```bash
-# Test database
-node scripts/test-database.js
-
-# Test startup
-node scripts/test-start.js
-
-# Test OAuth
-node scripts/debug-oauth.js
-```
-
-## 📊 Features Overview
-
-### ✅ **Core Features**
-- [x] **AI Integration** - Gemini API with OAuth
-- [x] **Database System** - SQLite with persistent storage
-- [x] **Web Dashboard** - Real-time monitoring
-- [x] **Auto Mode** - Scheduled automation
-- [x] **Tool Integration** - System operations
-- [x] **Session Management** - Persistent sessions
-- [x] **Search & History** - Conversation search
-- [x] **Settings Management** - Persistent preferences
-
-### ✅ **Advanced Features**
-- [x] **OAuth Authentication** - Google account integration
-- [x] **File Indexing** - Modal database system
-- [x] **Autocomplete** - Command suggestions
-- [x] **YOLO Mode** - Advanced operations
-- [x] **Web Server** - HTTP dashboard
-- [x] **Backup System** - Database backup/restore
-- [x] **Cleanup Tools** - Data management
-- [x] **Statistics** - Usage analytics
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
-
-### Development Setup
-
-1. **Fork** the repository
-2. **Clone** your fork
-3. **Install** dependencies: `npm install`
-4. **Run tests**: `npm test`
-5. **Make changes** and test
-6. **Submit** a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
-
-## 🆘 Support
-
-- **Documentation**: [📚 docs/](./docs/)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/notabot/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/notabot/discussions)
-
-## 🗺️ Roadmap
-
-See our [ROADMAP.md](./ROADMAP.md) for upcoming features and improvements.
+- **Main Repository**: https://github.com/involvex/notabot
+- **Documentation**: https://github.com/involvex/notabot/tree/main/docs
+- **Issues**: https://github.com/involvex/notabot/issues
+- **Discussions**: https://github.com/involvex/notabot/discussions
 
 ---
 
-**🎉 Ready to get started?** Check out the [Quick Start Guide](./docs/setup/QUICK_START.md)!
+**NotABot** - Full automated CLI agent with AI integration, OAuth authentication, and advanced features

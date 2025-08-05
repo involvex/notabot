@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotABot Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .doc-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .doc-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .nav-breadcrumb {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .nav-breadcrumb a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .warning {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .info {
+            background: #bee3f8;
+            border: 1px solid #90cdf4;
+            color: #2b6cb0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #2f855a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-breadcrumb">
+            <a href="index.html"><i class="fas fa-home"></i> Home</a> / Documentation
+        </div>
+
+        <div class="header">
+            <h1><i class="fas fa-book"></i> NotABot Documentation</h1>
+            <p>Complete guide to using NotABot CLI agent</p>
+        </div>
+
+        <div class="main-content">
+            <div class="doc-section">
+                <h2><i class="fas fa-rocket"></i> Quick Start Guide</h2>
+                <p>Get NotABot up and running in minutes with this quick start guide.</p>
+                
+                <h3>1. Installation</h3>
+                <div class="code-block">
+npm install -g notabot
+                </div>
+
+                <h3>2. First Run</h3>
+                <div class="code-block">
+notabot
+                </div>
+
+                <h3>3. Authentication</h3>
+                <div class="code-block">
+/login
+                </div>
+
+                <div class="info">
+                    <strong>Note:</strong> You'll need to set up Google OAuth credentials first. See the OAuth Setup guide below.
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-key"></i> OAuth Setup</h2>
+                <p>Configure Google OAuth authentication for secure access to NotABot.</p>
+
+                <h3>Step 1: Create Google Cloud Project</h3>
+                <ol>
+                    <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a></li>
+                    <li>Create a new project or select existing</li>
+                    <li>Enable the Gemini API</li>
+                </ol>
+
+                <h3>Step 2: Create OAuth Credentials</h3>
+                <ol>
+                    <li>Go to "APIs & Services" > "Credentials"</li>
+                    <li>Create OAuth 2.0 Client ID</li>
+                    <li>Add <code>http://localhost:3000/auth/callback</code> to authorized redirect URIs</li>
+                </ol>
+
+                <h3>Step 3: Set Environment Variables</h3>
+                <div class="code-block">
+export GOOGLE_CLIENT_ID="your-client-id"
+export GOOGLE_CLIENT_SECRET="your-client-secret"
+                </div>
+
+                <div class="warning">
+                    <strong>Security:</strong> Never commit your OAuth credentials to version control. Use environment variables or secure configuration files.
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-database"></i> Database System</h2>
+                <p>NotABot uses SQLite for persistent storage of conversations, settings, and user data.</p>
+
+                <h3>Database Features</h3>
+                <ul class="feature-list">
+                    <li>Conversation history with search capabilities</li>
+                    <li>Session tracking and statistics</li>
+                    <li>Settings persistence across sessions</li>
+                    <li>User profile management</li>
+                    <li>File indexing and search</li>
+                    <li>Auto mode logging</li>
+                    <li>Web server access logs</li>
+                </ul>
+
+                <h3>Database Commands</h3>
+                <div class="code-block">
+/db status              - Show database statistics
+/db conversations [10]  - Show recent conversations
+/db search <query>      - Search conversation history
+/db cleanup [30]        - Clean up old data (days)
+/db backup [path]       - Create database backup
+                </div>
+
+                <h3>Database Location</h3>
+                <p>The SQLite database is stored at:</p>
+                <div class="code-block">
+~/.notabot/notabot.db
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-globe"></i> Web Dashboard</h2>
+                <p>Access NotABot's web interface for remote monitoring and control.</p>
+
+                <h3>Starting the Web Server</h3>
+                <div class="code-block">
+/webserver start
+                </div>
+
+                <h3>Accessing the Dashboard</h3>
+                                 <p>Once started, visit: <a href="http://localhost:4000" target="_blank" rel="noopener">http://localhost:4000</a></p>
+
+                <h3>Dashboard Features</h3>
+                <ul class="feature-list">
+                    <li>Real-time session statistics</li>
+                    <li>Live conversation history</li>
+                    <li>Settings management</li>
+                    <li>Remote command execution</li>
+                    <li>Auto mode configuration</li>
+                    <li>YOLO mode toggle</li>
+                </ul>
+
+                <h3>Web Server Commands</h3>
+                <div class="code-block">
+/webserver start        - Start web server
+/webserver stop         - Stop web server
+/webserver status       - Check server status
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-cogs"></i> Auto Mode</h2>
+                <p>Configure automated tasks and scheduled operations.</p>
+
+                <h3>Enabling Auto Mode</h3>
+                <div class="code-block">
+/auto enable
+                </div>
+
+                <h3>Configuring Auto Commands</h3>
+                <div class="code-block">
+/auto commands "command1" "command2" "command3"
+                </div>
+
+                <h3>Setting Auto Triggers</h3>
+                <div class="code-block">
+/auto triggers "pattern1" "pattern2"
+                </div>
+
+                <h3>Auto Mode Commands</h3>
+                <div class="code-block">
+/auto enable            - Enable auto mode
+/auto disable           - Disable auto mode
+/auto status            - Check auto mode status
+/auto commands          - Set auto commands
+/auto triggers          - Set auto triggers
+                </div>
+
+                <div class="info">
+                    <strong>Tip:</strong> Auto mode runs commands in the background at regular intervals. Use with caution and test thoroughly.
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-terminal"></i> Tool System</h2>
+                <p>NotABot includes a comprehensive set of tools for system operations.</p>
+
+                <h3>Available Tools</h3>
+                <div class="code-block">
+@list_directory path=.  - List files and directories
+@read_file path=file    - Read file contents
+@write_file path=file   - Write content to file
+@run_shell_command cmd  - Execute shell command
+@read_all_files path=.  - Read all files in directory
+@cd path=../           - Change directory
+@yolo_mode action=enable - Enable YOLO mode
+@code_analysis path=file - Analyze code file
+                </div>
+
+                <h3>Tool Usage Examples</h3>
+                <div class="code-block">
+# List current directory
+@list_directory path=.
+
+# Read a file
+@read_file path=package.json
+
+# Write to a file
+@write_file path=test.txt content=Hello World
+
+# Execute a command
+@run_shell_command command=ls -la
+
+# Change directory
+@cd path=../src
+                </div>
+
+                <div class="warning">
+                    <strong>YOLO Mode:</strong> Some tools can be dangerous. Use YOLO mode with extreme caution and only when you understand the implications.
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-exclamation-triangle"></i> YOLO Mode</h2>
+                <p>YOLO mode allows dangerous operations that are normally restricted.</p>
+
+                <h3>Enabling YOLO Mode</h3>
+                <div class="code-block">
+/yolo
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ Warning:</strong> YOLO mode disables safety restrictions. Use only when you understand the risks and have proper backups.
+                </div>
+
+                <h3>YOLO Mode Features</h3>
+                <ul class="feature-list">
+                    <li>Dangerous file operations</li>
+                    <li>System-level commands</li>
+                    <li>Bulk file operations</li>
+                    <li>Network operations</li>
+                    <li>Process management</li>
+                </ul>
+
+                <h3>Disabling YOLO Mode</h3>
+                <div class="code-block">
+/yolo
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-question-circle"></i> Troubleshooting</h2>
+                <p>Common issues and their solutions.</p>
+
+                <h3>OAuth Issues</h3>
+                <div class="info">
+                    <strong>Problem:</strong> "App not found" error during login<br>
+                    <strong>Solution:</strong> Check your OAuth credentials and ensure the redirect URI is correct
+                </div>
+
+                <h3>Database Issues</h3>
+                <div class="info">
+                    <strong>Problem:</strong> Database initialization fails<br>
+                    <strong>Solution:</strong> Check file permissions and ensure the .notabot directory is writable
+                </div>
+
+                <h3>Web Server Issues</h3>
+                <div class="info">
+                    <strong>Problem:</strong> Port 4000 already in use<br>
+                    <strong>Solution:</strong> Change the port in settings or stop the conflicting service
+                </div>
+
+                <h3>Getting Help</h3>
+                <ul class="feature-list">
+                    <li>Check the <code>/help</code> command for available options</li>
+                    <li>Use <code>/settings</code> to view current configuration</li>
+                    <li>Check <code>/stats</code> for session information</li>
+                                         <li>Visit the <a href="https://github.com/involvex/notabot/issues" target="_blank" rel="noopener">GitHub Issues</a> page</li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-download"></i> Installation Options</h2>
+                <p>Multiple ways to install and run NotABot.</p>
+
+                <h3>Global Installation (Recommended)</h3>
+                <div class="code-block">
+npm install -g notabot
+notabot
+                </div>
+
+                <h3>From Source</h3>
+                <div class="code-block">
+git clone https://github.com/involvex/notabot.git
+cd notabot
+npm install
+npm install -g .
+notabot
+                </div>
+
+                <h3>Development Setup</h3>
+                <div class="code-block">
+git clone https://github.com/involvex/notabot.git
+cd notabot
+npm install
+npm start
+                </div>
+
+                <h3>Docker (Coming Soon)</h3>
+                <div class="code-block">
+docker pull involvex/notabot
+docker run -it involvex/notabot
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h2><i class="fas fa-hands-helping"></i> Contributing</h2>
+                <p>Help improve NotABot by contributing to the project.</p>
+
+                <h3>Getting Started</h3>
+                <div class="code-block">
+# Fork the repository
+git clone https://github.com/YOUR_USERNAME/notabot.git
+
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Make your changes
+# Submit a pull request
+                </div>
+
+                <h3>Development Guidelines</h3>
+                <ul class="feature-list">
+                    <li>Follow the existing code style</li>
+                    <li>Add tests for new features</li>
+                    <li>Update documentation</li>
+                    <li>Test on multiple platforms</li>
+                    <li>Use meaningful commit messages</li>
+                </ul>
+
+                <h3>Areas for Contribution</h3>
+                <ul class="feature-list">
+                    <li>New tools and integrations</li>
+                    <li>UI/UX improvements</li>
+                    <li>Documentation updates</li>
+                    <li>Bug fixes and performance</li>
+                    <li>Test coverage</li>
+                </ul>
+
+                <a href="https://github.com/involvex/notabot" class="btn">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-breadcrumb">
+            <a href="index.html"><i class="fas fa-home"></i> Back to Home</a>
+        </div>
+    </div>
+</body>
+</html> 
