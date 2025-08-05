@@ -1548,14 +1548,14 @@ class NotABotAgent {
     }
   }
 
-  async handleCd(path) {
-    if (!path) {
+  async handleCd(dirPath) {
+    if (!dirPath) {
       console.log(`${colors.yellow}Usage: /cd <directory>${colors.reset}`);
       return;
     }
 
     try {
-      const absolutePath = path.resolve(path);
+      const absolutePath = path.resolve(dirPath);
       if (!fs.existsSync(absolutePath)) {
         console.log(`${colors.red}Directory does not exist: ${absolutePath}${colors.reset}`);
         return;
@@ -1598,15 +1598,15 @@ class NotABotAgent {
     }
   }
 
-  async handleReadAllFiles(path) {
-    if (!path) {
+  async handleReadAllFiles(dirPath) {
+    if (!dirPath) {
       console.log(`${colors.yellow}Usage: /readall <directory>${colors.reset}`);
       return;
     }
 
     try {
-      const files = this.toolRegistry.getAllFiles(path);
-      console.log(`${colors.blue}Found ${files.length} files in ${path}${colors.reset}`);
+      const files = this.toolRegistry.getAllFiles(dirPath);
+      console.log(`${colors.blue}Found ${files.length} files in ${dirPath}${colors.reset}`);
       
       for (const file of files.slice(0, 10)) { // Show first 10 files
         try {
@@ -1672,16 +1672,16 @@ class NotABotAgent {
     }
   }
 
-  async handleIndex(path) {
+  async handleIndex(dirPath) {
     try {
-      if (!path) {
-        path = this.currentDirectory;
+      if (!dirPath) {
+        dirPath = this.currentDirectory;
       }
       
-      console.log(`${colors.blue}📁 Indexing files in: ${path}${colors.reset}`);
+      console.log(`${colors.blue}📁 Indexing files in: ${dirPath}${colors.reset}`);
       
       const excludePatterns = ['node_modules', '.git', '.vscode', 'dist', 'build', '.env'];
-      const indexedFiles = await this.modalDb.indexDirectory(path, excludePatterns);
+      const indexedFiles = await this.modalDb.indexDirectory(dirPath, excludePatterns);
       
       console.log(`${colors.green}✅ Indexed ${indexedFiles.length} files${colors.reset}`);
       
@@ -1816,11 +1816,11 @@ class NotABotAgent {
 
   async handleAnalyzeFiles(args) {
     try {
-      const path = args[0] || this.currentDirectory;
-      console.log(`${colors.blue}🔍 Analyzing files in: ${path}${colors.reset}`);
+      const analyzePath = args[0] || this.currentDirectory;
+      console.log(`${colors.blue}🔍 Analyzing files in: ${analyzePath}${colors.reset}`);
       
       // Get all files in directory
-      const files = this.toolRegistry.getAllFiles(path, [
+      const files = this.toolRegistry.getAllFiles(analyzePath, [
         'node_modules', '.git', '.vscode', 'dist', 'build', '.env', '*.log'
       ]);
       
@@ -1831,7 +1831,7 @@ class NotABotAgent {
       });
       
       if (codeFiles.length === 0) {
-        console.log(`${colors.yellow}No code files found in ${path}${colors.reset}`);
+        console.log(`${colors.yellow}No code files found in ${analyzePath}${colors.reset}`);
         return;
       }
       
