@@ -1031,9 +1031,120 @@ class AutoModeManager {
       
       if (shouldExecute) {
         await this.executeAutoCommands();
+        await this.autoAnalyzeFiles();
       }
     } catch (error) {
       console.log(`${colors.red}Auto mode error: ${error.message}${colors.reset}`);
+    }
+  }
+
+  async autoAnalyzeFiles() {
+    try {
+      console.log(`${colors.blue}🔍 Auto-analyzing files in current directory...${colors.reset}`);
+      
+      // Get all files in current directory
+      const files = this.agent.toolRegistry.getAllFiles(this.agent.currentDirectory, [
+        'node_modules', '.git', '.vscode', 'dist', 'build', '.env', '*.log'
+      ]);
+      
+      // Filter for code files
+      const codeFiles = files.filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        return ['.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.cpp', '.c', '.cs', '.php', '.rb', '.go', '.rs', '.swift', '.kt'].includes(ext);
+      });
+      
+      if (codeFiles.length === 0) {
+        console.log(`${colors.yellow}No code files found in current directory${colors.reset}`);
+        return;
+      }
+      
+      console.log(`${colors.green}Found ${codeFiles.length} code files${colors.reset}`);
+      
+      // Analyze each file
+      for (const file of codeFiles.slice(0, 5)) { // Limit to 5 files
+        await this.analyzeFile(file);
+      }
+      
+      // Generate project summary
+      await this.generateProjectSummary(codeFiles);
+      
+    } catch (error) {
+      console.log(`${colors.red}Auto analysis error: ${error.message}${colors.reset}`);
+    }
+  }
+
+  async analyzeFile(filePath) {
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const ext = path.extname(filePath).toLowerCase();
+      const language = ext.slice(1);
+      
+      console.log(`${colors.cyan}📄 Analyzing: ${path.basename(filePath)}${colors.reset}`);
+      
+      // Analyze code complexity
+      const complexity = this.agent.toolRegistry.calculateComplexity(content);
+      
+      // Get AI analysis
+      const analysis = await this.agent.geminiAPI.analyzeCode(content, language);
+      
+      console.log(`${colors.magenta}📊 ${path.basename(filePath)} Analysis:${colors.reset}`);
+      console.log(`   Language: ${language}`);
+      console.log(`   Lines: ${content.split('\n').length}`);
+      console.log(`   Complexity: ${complexity}`);
+      console.log(`   AI Analysis: ${analysis.substring(0, 150)}...`);
+      console.log('');
+      
+      // Store analysis in database
+      if (this.agent.database.initialized) {
+        await this.agent.database.saveFileAnalysis(filePath, {
+          language,
+          lines: content.split('\n').length,
+          complexity,
+          analysis: analysis.substring(0, 500),
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+    } catch (error) {
+      console.log(`${colors.red}Error analyzing ${filePath}: ${error.message}${colors.reset}`);
+    }
+  }
+
+  async generateProjectSummary(files) {
+    try {
+      const fileTypes = {};
+      let totalLines = 0;
+      
+      for (const file of files) {
+        const ext = path.extname(file).toLowerCase();
+        const content = fs.readFileSync(file, 'utf8');
+        const lines = content.split('\n').length;
+        
+        fileTypes[ext] = (fileTypes[ext] || 0) + 1;
+        totalLines += lines;
+      }
+      
+      console.log(`${colors.bright}📋 Project Summary:${colors.reset}`);
+      console.log(`   Total files: ${files.length}`);
+      console.log(`   Total lines: ${totalLines}`);
+      console.log(`   File types: ${Object.entries(fileTypes).map(([ext, count]) => `${ext}: ${count}`).join(', ')}`);
+      console.log('');
+      
+      // Generate AI project overview
+      const projectPrompt = `Analyze this project structure and provide insights:
+Files: ${files.map(f => path.basename(f)).join(', ')}
+File types: ${Object.entries(fileTypes).map(([ext, count]) => `${ext}: ${count}`).join(', ')}
+Total lines: ${totalLines}
+
+Provide a brief overview of what this project appears to be and any suggestions for improvement.`;
+      
+      const overview = await this.agent.geminiAPI.generateResponse(projectPrompt);
+      console.log(`${colors.blue}🤖 AI Project Overview:${colors.reset}`);
+      console.log(overview.substring(0, 300) + (overview.length > 300 ? '...' : ''));
+      console.log('');
+      
+    } catch (error) {
+      console.log(`${colors.red}Error generating project summary: ${error.message}${colors.reset}`);
     }
   }
 
@@ -1312,6 +1423,10 @@ class NotABotAgent {
       
       case 'auto':
         this.handleAutoMode(args);
+        break;
+      
+      case 'analyze':
+        await this.handleAnalyzeFiles(args);
         break;
       
       case 'db':
@@ -1699,6 +1814,44 @@ class NotABotAgent {
     }
   }
 
+  async handleAnalyzeFiles(args) {
+    try {
+      const path = args[0] || this.currentDirectory;
+      console.log(`${colors.blue}🔍 Analyzing files in: ${path}${colors.reset}`);
+      
+      // Get all files in directory
+      const files = this.toolRegistry.getAllFiles(path, [
+        'node_modules', '.git', '.vscode', 'dist', 'build', '.env', '*.log'
+      ]);
+      
+      // Filter for code files
+      const codeFiles = files.filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        return ['.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.cpp', '.c', '.cs', '.php', '.rb', '.go', '.rs', '.swift', '.kt'].includes(ext);
+      });
+      
+      if (codeFiles.length === 0) {
+        console.log(`${colors.yellow}No code files found in ${path}${colors.reset}`);
+        return;
+      }
+      
+      console.log(`${colors.green}Found ${codeFiles.length} code files${colors.reset}`);
+      
+      // Analyze each file
+      for (const file of codeFiles.slice(0, 10)) { // Limit to 10 files
+        await this.autoMode.analyzeFile(file);
+      }
+      
+      // Generate project summary
+      await this.autoMode.generateProjectSummary(codeFiles);
+      
+      console.log(`${colors.green}✅ File analysis completed!${colors.reset}`);
+      
+    } catch (error) {
+      console.log(`${colors.red}Error analyzing files: ${error.message}${colors.reset}`);
+    }
+  }
+
   async handleDatabase(args) {
     const action = args[0] || 'status';
     
@@ -1794,7 +1947,7 @@ class NotABotAgent {
     console.log(`  /auth       - Set API key`);
     console.log(`  /debug      - Toggle debug mode`);
     console.log(`  /stats      - Show session statistics`);
-    console.log(`  /analyze    - Analyze code file`);
+    console.log(`  /analyze    - Analyze code files in directory`);
     console.log(`  /context    - Show current context`);
     console.log(`  /reset      - Reset session`);
     console.log(`  /yolo       - Toggle YOLO mode`);

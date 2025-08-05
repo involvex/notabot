@@ -105,8 +105,22 @@ class NotABotDatabase {
         file_size INTEGER,
         file_type TEXT,
         content_hash TEXT,
-        indexed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         last_modified DATETIME,
+        metadata TEXT,
+        indexed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // File analysis table
+    await this.db.exec(`
+      CREATE TABLE IF NOT EXISTS file_analysis (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        file_path TEXT UNIQUE NOT NULL,
+        language TEXT,
+        lines INTEGER,
+        complexity REAL,
+        analysis TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         metadata TEXT
       )
     `);
@@ -352,7 +366,7 @@ class NotABotDatabase {
   }
 
   // File indexing methods
-  async saveIndexedFile(filePath, fileName, fileSize, fileType, contentHash, lastModified, metadata = null) {
+    async saveIndexedFile(filePath, fileName, fileSize, fileType, contentHash, lastModified, metadata = null) {
     try {
       await this.db.run(`
         INSERT OR REPLACE INTO indexed_files (file_path, file_name, file_size, file_type, content_hash, last_modified, metadata)
@@ -366,11 +380,58 @@ class NotABotDatabase {
         lastModified,
         metadata ? JSON.stringify(metadata) : null
       ]);
-      
+
       return true;
     } catch (error) {
       console.error(`❌ Failed to save indexed file: ${error.message}`);
       return false;
+    }
+  }
+
+  async saveFileAnalysis(filePath, analysisData) {
+    try {
+      await this.db.run(`
+        INSERT OR REPLACE INTO file_analysis (file_path, language, lines, complexity, analysis, metadata)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [
+        filePath,
+        analysisData.language,
+        analysisData.lines,
+        analysisData.complexity,
+        analysisData.analysis,
+        JSON.stringify(analysisData)
+      ]);
+
+      return true;
+    } catch (error) {
+      console.error(`❌ Failed to save file analysis: ${error.message}`);
+      return false;
+    }
+  }
+
+  async getFileAnalysis(filePath = null, limit = 50) {
+    try {
+      let query = `
+        SELECT * FROM file_analysis 
+        ORDER BY timestamp DESC
+        LIMIT ?
+      `;
+      let params = [limit];
+
+      if (filePath) {
+        query = `
+          SELECT * FROM file_analysis 
+          WHERE file_path = ?
+          ORDER BY timestamp DESC
+        `;
+        params = [filePath];
+      }
+
+      const rows = await this.db.all(query, params);
+      return rows;
+    } catch (error) {
+      console.error(`❌ Failed to get file analysis: ${error.message}`);
+      return [];
     }
   }
 
