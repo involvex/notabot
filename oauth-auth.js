@@ -14,9 +14,9 @@ const __dirname = dirname(__filename);
 
 export class OAuthAuthenticator {
   constructor() {
-    this.clientId = process.env.GOOGLE_CLIENT_ID || 'your-google-client-id';
-    this.clientSecret = process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret';
-    this.redirectUri = 'http://localhost:3000/auth/callback';
+    this.clientId = process.env.GOOGLE_CLIENT_ID || '57386476101-ndu1bfbj7us90j0kvc77ph8v6fe78f4g.apps.googleusercontent.com';
+    this.clientSecret = process.env.GOOGLE_CLIENT_SECRET || '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';
+    this.redirectUri = 'http://localhost';
     this.authServer = null;
     this.authPromise = null;
     this.authResolve = null;
@@ -40,7 +40,7 @@ export class OAuthAuthenticator {
       this.authReject = reject;
 
       this.authServer = createServer((req, res) => {
-        const url = new URL(req.url, `http://localhost:3000`);
+        const url = new URL(req.url, `http://localhost:80`);
         
         if (url.pathname === '/auth') {
           // Redirect to Google OAuth
@@ -54,7 +54,7 @@ export class OAuthAuthenticator {
           
           res.writeHead(302, { Location: authUrl });
           res.end();
-        } else if (url.pathname === '/auth/callback') {
+        } else if (url.pathname === '/') {
           const code = url.searchParams.get('code');
           
           if (code) {
@@ -70,10 +70,10 @@ export class OAuthAuthenticator {
         }
       });
 
-      this.authServer.listen(3000, () => {
-        console.log('🌐 OAuth server started on http://localhost:3000');
+      this.authServer.listen(80, () => {
+        console.log('🌐 OAuth server started on http://localhost');
         console.log('🔗 Opening browser for authentication...');
-        console.log('📝 If browser doesn\'t open automatically, visit: http://localhost:3000/auth');
+        console.log('📝 If browser doesn\'t open automatically, visit: http://localhost/auth');
       });
     });
   }
@@ -157,19 +157,19 @@ export class OAuthAuthenticator {
       
       if (platform === 'win32') {
         command = 'cmd';
-        args = ['/c', 'start', 'http://localhost:3000/auth'];
+        args = ['/c', 'start', 'http://localhost/auth'];
       } else if (platform === 'darwin') {
         command = 'open';
-        args = ['http://localhost:3000/auth'];
+        args = ['http://localhost/auth'];
       } else {
         command = 'xdg-open';
-        args = ['http://localhost:3000/auth'];
+        args = ['http://localhost/auth'];
       }
 
       try {
         spawn(command, args, { stdio: 'ignore' });
       } catch (error) {
-        console.log('Could not automatically open browser. Please visit: http://localhost:3000/auth');
+        console.log('Could not automatically open browser. Please visit: http://localhost/auth');
       }
 
       // Wait for authentication
