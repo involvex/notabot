@@ -21,6 +21,17 @@ export class OAuthAuthenticator {
     this.authPromise = null;
     this.authResolve = null;
     this.authReject = null;
+    
+    // Check if OAuth credentials are configured
+    if (this.clientId === 'your-google-client-id' || this.clientSecret === 'your-google-client-secret') {
+      console.log('⚠️  OAuth credentials not configured. Please set:');
+      console.log('   GOOGLE_CLIENT_ID=your-client-id');
+      console.log('   GOOGLE_CLIENT_SECRET=your-client-secret');
+      console.log('   Or visit: https://console.cloud.google.com/');
+    } else {
+      console.log('✅ OAuth credentials configured');
+      console.log(`   Client ID: ${this.clientId.substring(0, 20)}...`);
+    }
   }
 
   async startAuthServer() {
@@ -60,8 +71,9 @@ export class OAuthAuthenticator {
       });
 
       this.authServer.listen(3000, () => {
-        console.log('OAuth server started on http://localhost:3000');
-        console.log('Visit http://localhost:3000/auth to authenticate');
+        console.log('🌐 OAuth server started on http://localhost:3000');
+        console.log('🔗 Opening browser for authentication...');
+        console.log('📝 If browser doesn\'t open automatically, visit: http://localhost:3000/auth');
       });
     });
   }
@@ -141,17 +153,24 @@ export class OAuthAuthenticator {
     try {
       // Open browser for authentication
       const platform = process.platform;
-      let command;
+      let command, args;
       
       if (platform === 'win32') {
-        command = 'start';
+        command = 'cmd';
+        args = ['/c', 'start', 'http://localhost:3000/auth'];
       } else if (platform === 'darwin') {
         command = 'open';
+        args = ['http://localhost:3000/auth'];
       } else {
         command = 'xdg-open';
+        args = ['http://localhost:3000/auth'];
       }
 
-      spawn(command, ['http://localhost:3000/auth'], { stdio: 'ignore' });
+      try {
+        spawn(command, args, { stdio: 'ignore' });
+      } catch (error) {
+        console.log('Could not automatically open browser. Please visit: http://localhost:3000/auth');
+      }
 
       // Wait for authentication
       const authData = await this.startAuthServer();

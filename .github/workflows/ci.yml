@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: NotABot CI/CD
 
 on:
   push:
@@ -33,10 +33,11 @@ jobs:
     - name: Check code quality
       run: |
         # Basic syntax check
-        node -c enhanced-cli-agent.js
-        node -c simple-cli-agent.js
+        node -c notabot.js
+        node -c database.js
         node -c oauth-auth.js
         node -c autocomplete.js
+        node -c modal-db.js
         node -c setup.js
 
   build:
@@ -71,11 +72,11 @@ jobs:
           ## What's Changed
           
           ### 🚀 New Features
-          - Enhanced CLI agents with AI integration
+          - NotABot CLI agent with AI integration
           - Google OAuth authentication
-          - Advanced autocomplete functionality
-          - YOLO mode for dangerous operations
+          - SQLite database system
           - Web dashboard with real-time monitoring
+          - Auto mode for automation
           
           ### 🔧 Improvements
           - Global installation support
@@ -84,30 +85,31 @@ jobs:
           - Automated CI/CD pipeline
           
           ### 🐛 Bug Fixes
-          - Fixed immediate quitting issue
-          - Improved settings management
+          - Fixed database initialization
+          - Improved OAuth flow
           - Enhanced error handling
           
           ## Installation
           
           ```bash
-          npm install -g enhanced-cli-agents
+          npm install -g notabot
           ```
           
           ## Quick Start
           
           ```bash
-          enhanced-cli
-          /auth YOUR_API_KEY
+          notabot
+          /login
           /webserver start
           ```
           
           ## Documentation
           
           - [README.md](README.md) - Main documentation
-          - [ENHANCED-FEATURES-README.md](ENHANCED-FEATURES-README.md) - Advanced features
-          - [OAUTH-AUTOCOMPLETE-README.md](OAUTH-AUTOCOMPLETE-README.md) - OAuth and autocomplete
-          - [FINAL-FEATURES-SUMMARY.md](FINAL-FEATURES-SUMMARY.md) - Complete feature summary
+          - [docs/](docs/) - Comprehensive guides
+          - [Quick Start](docs/setup/QUICK_START.md) - Get started
+          - [OAuth Setup](docs/oauth/OAUTH_SETUP.md) - Authentication
+          - [Database Features](docs/database/DATABASE_FEATURES.md) - Database system
         draft: false
         prerelease: false
 

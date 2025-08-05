@@ -1,17 +1,17 @@
 {
-  "name": "enhanced-cli-agents",
+  "name": "notabot",
   "version": "1.0.0",
-  "description": "Enhanced CLI agents with AI integration, OAuth authentication, and advanced features",
-  "main": "enhanced-cli-agent.js",
+  "type": "module",
+  "description": "NotABot - Full automated CLI agent with AI integration, OAuth authentication, and advanced features",
+  "main": "notabot.js",
   "bin": {
-    "enhanced-cli": "./enhanced-cli-agent.js",
-    "ecli": "./enhanced-cli-agent.js",
+    "notabot": "./notabot.js",
+    "nb": "./notabot.js",
     "simple-cli": "./simple-cli-agent.js",
-    "scli": "./simple-cli-agent.js",
-    "gemini-cli": "./enhanced-cli-agent.js"
+    "scli": "./simple-cli-agent.js"
   },
   "scripts": {
-    "start": "node enhanced-cli-agent.js",
+    "start": "node notabot.js",
     "start:simple": "node simple-cli-agent.js",
     "build": "echo 'No build step required - pure Node.js'",
     "test": "echo 'No tests specified' && exit 0",
@@ -22,14 +22,15 @@
   "keywords": [
     "cli",
     "agent",
-    "gemini",
+    "notabot",
     "ai",
     "terminal",
     "oauth",
     "autocomplete",
     "yolo",
     "webserver",
-    "dashboard"
+    "dashboard",
+    "automation"
   ],
   "author": "Your Name",
   "license": "MIT",
@@ -38,27 +39,30 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
   },
-  "devDependencies": {},
   "files": [
-    "enhanced-cli-agent.js",
-    "simple-cli-agent.js",
+    "notabot.js",
+    "database.js",
     "oauth-auth.js",
     "autocomplete.js",
     "modal-db.js",
     "setup.js",
+    "scripts/",
+    "docs/",
     "README.md",
     "LICENSE"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/enhanced-cli-agents.git"
+    "url": "git+https://github.com/yourusername/notabot.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/enhanced-cli-agents/issues"
+    "url": "https://github.com/yourusername/notabot/issues"
   },
-  "homepage": "https://github.com/yourusername/enhanced-cli-agents#readme",
+  "homepage": "https://github.com/yourusername/notabot#readme",
   "preferGlobal": true,
   "os": [
     "darwin",

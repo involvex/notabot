@@ -32,7 +32,7 @@ class SetupManager {
   constructor() {
     this.homeDir = os.homedir();
     this.simpleSettingsDir = path.join(this.homeDir, '.simple-cli');
-    this.enhancedSettingsDir = path.join(this.homeDir, '.enhanced-cli');
+    this.notabotSettingsDir = path.join(this.homeDir, '.notabot');
   }
 
   async run() {
@@ -67,7 +67,7 @@ class SetupManager {
   async createSettingsDirectories() {
     console.log(`${colors.blue}Creating settings directories...${colors.reset}`);
     
-    const dirs = [this.simpleSettingsDir, this.enhancedSettingsDir];
+    const dirs = [this.simpleSettingsDir, this.notabotSettingsDir];
     
     for (const dir of dirs) {
       if (!fs.existsSync(dir)) {
@@ -93,7 +93,7 @@ class SetupManager {
       tools: ['list_directory', 'read_file', 'write_file', 'run_shell_command']
     };
 
-    const enhancedSettings = {
+    const notabotSettings = {
       theme: 'default',
       model: 'gemini-1.5-flash',
       authType: 'api-key',
@@ -107,20 +107,25 @@ class SetupManager {
       yoloMode: false,
       currentDirectory: process.cwd(),
       webServerEnabled: false,
-      webServerPort: 4000
+      webServerPort: 4000,
+      autoMode: false,
+      autoCommands: [],
+      autoTriggers: [],
+      webInterfaceEnabled: true,
+      webInterfacePort: 4001
     };
 
     const simpleSettingsFile = path.join(this.simpleSettingsDir, 'settings.json');
-    const enhancedSettingsFile = path.join(this.enhancedSettingsDir, 'settings.json');
+    const notabotSettingsFile = path.join(this.notabotSettingsDir, 'settings.json');
 
     if (!fs.existsSync(simpleSettingsFile)) {
       fs.writeFileSync(simpleSettingsFile, JSON.stringify(simpleSettings, null, 2));
       console.log(`${colors.green}Created: ${simpleSettingsFile}${colors.reset}`);
     }
 
-    if (!fs.existsSync(enhancedSettingsFile)) {
-      fs.writeFileSync(enhancedSettingsFile, JSON.stringify(enhancedSettings, null, 2));
-      console.log(`${colors.green}Created: ${enhancedSettingsFile}${colors.reset}`);
+    if (!fs.existsSync(notabotSettingsFile)) {
+      fs.writeFileSync(notabotSettingsFile, JSON.stringify(notabotSettings, null, 2));
+      console.log(`${colors.green}Created: ${notabotSettingsFile}${colors.reset}`);
     }
   }
 
@@ -135,16 +140,16 @@ class SetupManager {
 
       const batchFiles = [
         {
-          name: 'enhanced-cli.bat',
-          content: `@echo off\nnode "${path.resolve(__dirname, 'enhanced-cli-agent.js')}" %*`
+          name: 'notabot.bat',
+          content: `@echo off\nnode "${path.resolve(__dirname, 'notabot.js')}" %*`
         },
         {
           name: 'simple-cli.bat',
           content: `@echo off\nnode "${path.resolve(__dirname, 'simple-cli-agent.js')}" %*`
         },
         {
-          name: 'ecli.bat',
-          content: `@echo off\nnode "${path.resolve(__dirname, 'enhanced-cli-agent.js')}" %*`
+          name: 'nb.bat',
+          content: `@echo off\nnode "${path.resolve(__dirname, 'notabot.js')}" %*`
         },
         {
           name: 'scli.bat',
@@ -202,17 +207,17 @@ class SetupManager {
     console.log(`${colors.white}================================${colors.reset}`);
     
     console.log(`\n${colors.green}Global Commands Available:${colors.reset}`);
-    console.log(`  enhanced-cli  - Enhanced CLI agent with AI integration`);
-    console.log(`  ecli          - Short alias for enhanced-cli`);
+    console.log(`  notabot       - NotABot automated CLI agent with AI integration`);
+    console.log(`  nb            - Short alias for notabot`);
     console.log(`  simple-cli    - Simple CLI agent with basic tools`);
     console.log(`  scli          - Short alias for simple-cli`);
-    console.log(`  gemini-cli    - Alias for enhanced-cli`);
     
     console.log(`\n${colors.green}Quick Start:${colors.reset}`);
-    console.log(`  1. Start enhanced CLI: ${colors.cyan}enhanced-cli${colors.reset}`);
+    console.log(`  1. Start NotABot: ${colors.cyan}notabot${colors.reset}`);
     console.log(`  2. Set API key: ${colors.cyan}/auth YOUR_API_KEY${colors.reset}`);
     console.log(`  3. Or use OAuth: ${colors.cyan}/login${colors.reset}`);
     console.log(`  4. Start web dashboard: ${colors.cyan}/webserver start${colors.reset}`);
+    console.log(`  5. Enable auto mode: ${colors.cyan}/auto enable${colors.reset}`);
     
     console.log(`\n${colors.green}Environment Variables:${colors.reset}`);
     console.log(`  GEMINI_API_KEY=your-api-key`);
@@ -221,7 +226,7 @@ class SetupManager {
     
     console.log(`\n${colors.green}Settings Files:${colors.reset}`);
     console.log(`  Simple CLI: ${this.simpleSettingsDir}/settings.json`);
-    console.log(`  Enhanced CLI: ${this.enhancedSettingsDir}/settings.json`);
+    console.log(`  NotABot: ${this.notabotSettingsDir}/settings.json`);
     
     console.log(`\n${colors.green}Documentation:${colors.reset}`);
     console.log(`  README.md - Main documentation`);
@@ -235,7 +240,7 @@ class SetupManager {
 }
 
 // Run setup if this script is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.includes('setup.js')) {
   const setup = new SetupManager();
   setup.run();
 }

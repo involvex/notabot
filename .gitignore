@@ -193,7 +193,8 @@ typings/
 ehthumbs.db
 Thumbs.db
 
-# CLI agent specific
+# NotABot specific
+.notabot/
 .simple-cli/
 .enhanced-cli/
 .cli-agents/
@@ -219,3 +220,16 @@ docs/.doctrees/
 # Local development
 .local/
 .dev/
+
+# Database backups
+*.db.backup
+*.db.bak
+
+# OAuth credentials (keep these private)
+client_secret_*.json
+*.credentials.json
+
+# Environment files
+.env.local
+.env.production
+.env.development

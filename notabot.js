@@ -15,15 +15,16 @@ import { spawn } from 'child_process';
 import { OAuthAuthenticator } from './oauth-auth.js';
 import { AutocompleteManager } from './autocomplete.js';
 import { ModalDatabase } from './modal-db.js';
+import { NotABotDatabase } from './database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Configuration
 const CONFIG = {
-  name: 'EnhancedCLI',
+  name: 'NotABot',
   version: '1.0.0',
-  settingsFile: path.join(os.homedir(), '.enhanced-cli', 'settings.json'),
+  settingsFile: path.join(os.homedir(), '.notabot', 'settings.json'),
   defaultSettings: {
     theme: 'default',
     model: 'gemini-1.5-flash',
@@ -38,7 +39,12 @@ const CONFIG = {
     yoloMode: false,
     currentDirectory: process.cwd(),
     webServerEnabled: false,
-    webServerPort: 4000
+    webServerPort: 4000,
+    autoMode: false,
+    autoCommands: [],
+    autoTriggers: [],
+    webInterfaceEnabled: true,
+    webInterfacePort: 4001
   }
 };
 
@@ -122,6 +128,76 @@ class WebServer {
         res.json(this.agent.settings.settings);
       });
 
+      // Settings management routes
+      app.post('/api/settings', express.json(), (req, res) => {
+        try {
+          const newSettings = req.body;
+          this.agent.settings.updateSettings(newSettings);
+          res.json({ success: true, message: 'Settings updated successfully' });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      app.post('/api/settings/:key', express.json(), (req, res) => {
+        try {
+          const { key } = req.params;
+          const value = req.body.value;
+          this.agent.settings.set(key, value);
+          res.json({ success: true, message: `Setting ${key} updated successfully` });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      // Control routes
+      app.post('/api/toggle-yolo', (req, res) => {
+        this.agent.toggleYoloMode();
+        res.json({ success: true, yoloMode: this.agent.yoloMode.isEnabled() });
+      });
+
+      app.post('/api/clear-history', (req, res) => {
+        this.agent.history.clear();
+        res.json({ success: true, message: 'History cleared' });
+      });
+
+      app.post('/api/reset-session', (req, res) => {
+        this.agent.resetSession();
+        res.json({ success: true, message: 'Session reset' });
+      });
+
+      app.post('/api/auto-mode', express.json(), (req, res) => {
+        try {
+          const { enabled, commands, triggers } = req.body;
+          this.agent.settings.set('autoMode', enabled);
+          this.agent.settings.set('autoCommands', commands || []);
+          this.agent.settings.set('autoTriggers', triggers || []);
+          res.json({ success: true, message: 'Auto mode updated' });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      app.post('/api/webserver/start', (req, res) => {
+        try {
+          this.agent.webServer.start();
+          this.agent.settings.set('webServerEnabled', true);
+          res.json({ success: true, message: 'Web server started' });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      app.post('/api/webserver/stop', (req, res) => {
+        try {
+          this.agent.webServer.stop();
+          this.agent.settings.set('webServerEnabled', false);
+          res.json({ success: true, message: 'Web server stopped' });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
       this.server = createServer(app);
       this.io = new Server(this.server);
 
@@ -174,10 +250,10 @@ class WebServer {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Enhanced CLI Agent - Live Dashboard</title>
+    <title>NotABot - Live Dashboard</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #1e1e1e; color: #fff; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1400px; margin: 0 auto; }
         .header { background: #2d2d2d; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: #2d2d2d; padding: 20px; border-radius: 8px; }
@@ -189,14 +265,26 @@ class WebServer {
         .assistant { color: #2196F3; }
         .tool { color: #FF9800; }
         .error { color: #f44336; }
+        .settings-form { background: #3d3d3d; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 8px; background: #555; border: 1px solid #666; color: #fff; border-radius: 3px; 
+        }
+        .btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-primary { background: #2196F3; color: white; }
+        .btn-success { background: #4CAF50; color: white; }
+        .btn-warning { background: #FF9800; color: white; }
+        .btn-danger { background: #f44336; color: white; }
+        .auto-mode { background: #4CAF50; padding: 10px; border-radius: 5px; margin: 10px 0; }
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Enhanced CLI Agent Dashboard</h1>
-            <p>Live monitoring and control panel</p>
+            <h1>🤖 NotABot Dashboard</h1>
+            <p>Full automated CLI agent with live monitoring and control</p>
         </div>
         
         <div class="grid">
@@ -206,8 +294,53 @@ class WebServer {
             </div>
             
             <div class="card">
-                <h2>⚙️ Settings</h2>
-                <div id="settings"></div>
+                <h2>⚙️ Settings Management</h2>
+                <div id="settings-form" class="settings-form">
+                    <div class="form-group">
+                        <label>Model:</label>
+                        <select id="model" onchange="updateSetting('model', this.value)">
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                            <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Tokens:</label>
+                        <input type="number" id="maxTokens" onchange="updateSetting('maxTokens', parseInt(this.value))" min="100" max="8192">
+                    </div>
+                    <div class="form-group">
+                        <label>Temperature:</label>
+                        <input type="number" id="temperature" onchange="updateSetting('temperature', parseFloat(this.value))" min="0" max="2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Web Server Port:</label>
+                        <input type="number" id="webServerPort" onchange="updateSetting('webServerPort', parseInt(this.value))" min="1000" max="9999">
+                    </div>
+                    <div class="form-group">
+                        <label>Debug Mode:</label>
+                        <input type="checkbox" id="debugMode" onchange="updateSetting('debugMode', this.checked)">
+                    </div>
+                    <div class="form-group">
+                        <label>Auto Mode:</label>
+                        <input type="checkbox" id="autoMode" onchange="updateSetting('autoMode', this.checked)">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveAllSettings()">Save All Settings</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>🤖 Auto Mode Configuration</h2>
+                <div id="auto-config" class="settings-form">
+                    <div class="form-group">
+                        <label>Auto Commands (one per line):</label>
+                        <textarea id="autoCommands" rows="4" placeholder="Enter commands to run automatically..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Auto Triggers (one per line):</label>
+                        <textarea id="autoTriggers" rows="4" placeholder="Enter trigger patterns..."></textarea>
+                    </div>
+                    <button class="btn btn-success" onclick="saveAutoMode()">Save Auto Mode</button>
+                </div>
             </div>
             
             <div class="card">
@@ -217,15 +350,18 @@ class WebServer {
             
             <div class="card">
                 <h2>🎮 Controls</h2>
-                <button onclick="toggleYolo()">Toggle YOLO Mode</button>
-                <button onclick="clearHistory()">Clear History</button>
-                <button onclick="resetSession()">Reset Session</button>
+                <button class="btn btn-warning" onclick="toggleYolo()">Toggle YOLO Mode</button>
+                <button class="btn btn-danger" onclick="clearHistory()">Clear History</button>
+                <button class="btn btn-primary" onclick="resetSession()">Reset Session</button>
+                <button class="btn btn-success" onclick="startWebServer()">Start Web Server</button>
+                <button class="btn btn-danger" onclick="stopWebServer()">Stop Web Server</button>
             </div>
         </div>
     </div>
 
     <script>
         const socket = io();
+        let currentSettings = {};
         
         socket.on('status', (data) => {
             updateStatus(data);
@@ -243,16 +379,78 @@ class WebServer {
                     <strong>Duration:</strong> \${data.sessionStats.sessionDuration}s
                 </div>
                 \${data.yoloMode ? '<div class="yolo">⚠️ YOLO MODE ENABLED ⚠️</div>' : ''}
+                \${data.settings.autoMode ? '<div class="auto-mode">🤖 AUTO MODE ENABLED</div>' : ''}
             \`;
             
-            updateSettings(data.settings);
+            updateSettingsForm(data.settings);
         }
         
-        function updateSettings(settings) {
-            const settingsDiv = document.getElementById('settings');
-            settingsDiv.innerHTML = Object.entries(settings)
-                .map(([key, value]) => \`<div><strong>\${key}:</strong> \${value}</div>\`)
-                .join('');
+        function updateSettingsForm(settings) {
+            currentSettings = settings;
+            
+            // Update form fields
+            if (document.getElementById('model')) document.getElementById('model').value = settings.model || 'gemini-1.5-flash';
+            if (document.getElementById('maxTokens')) document.getElementById('maxTokens').value = settings.maxTokens || 4096;
+            if (document.getElementById('temperature')) document.getElementById('temperature').value = settings.temperature || 0.7;
+            if (document.getElementById('webServerPort')) document.getElementById('webServerPort').value = settings.webServerPort || 4000;
+            if (document.getElementById('debugMode')) document.getElementById('debugMode').checked = settings.debugMode || false;
+            if (document.getElementById('autoMode')) document.getElementById('autoMode').checked = settings.autoMode || false;
+            
+            // Update auto mode fields
+            if (document.getElementById('autoCommands')) document.getElementById('autoCommands').value = (settings.autoCommands || []).join('\\n');
+            if (document.getElementById('autoTriggers')) document.getElementById('autoTriggers').value = (settings.autoTriggers || []).join('\\n');
+        }
+        
+        function updateSetting(key, value) {
+            fetch(\`/api/settings/\${key}\`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    console.log(\`Setting \${key} updated\`);
+                }
+            });
+        }
+        
+        function saveAllSettings() {
+            const settings = {
+                model: document.getElementById('model').value,
+                maxTokens: parseInt(document.getElementById('maxTokens').value),
+                temperature: parseFloat(document.getElementById('temperature').value),
+                webServerPort: parseInt(document.getElementById('webServerPort').value),
+                debugMode: document.getElementById('debugMode').checked,
+                autoMode: document.getElementById('autoMode').checked
+            };
+            
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings)
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    alert('Settings saved successfully!');
+                }
+            });
+        }
+        
+        function saveAutoMode() {
+            const commands = document.getElementById('autoCommands').value.split('\\n').filter(cmd => cmd.trim());
+            const triggers = document.getElementById('autoTriggers').value.split('\\n').filter(trigger => trigger.trim());
+            
+            fetch('/api/auto-mode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    enabled: document.getElementById('autoMode').checked,
+                    commands,
+                    triggers
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    alert('Auto mode configuration saved!');
+                }
+            });
         }
         
         function toggleYolo() {
@@ -265,6 +463,14 @@ class WebServer {
         
         function resetSession() {
             fetch('/api/reset-session', { method: 'POST' });
+        }
+        
+        function startWebServer() {
+            fetch('/api/webserver/start', { method: 'POST' });
+        }
+        
+        function stopWebServer() {
+            fetch('/api/webserver/stop', { method: 'POST' });
         }
         
         // Load initial data
@@ -764,8 +970,95 @@ class EnhancedHistoryManager {
   }
 }
 
-// Main Enhanced CLI class
-class EnhancedCLIAgent {
+// Auto Mode Manager
+class AutoModeManager {
+  constructor(agent) {
+    this.agent = agent;
+    this.isEnabled = false;
+    this.commands = [];
+    this.triggers = [];
+    this.lastCheck = Date.now();
+    this.checkInterval = null;
+  }
+
+  enable() {
+    this.isEnabled = true;
+    this.startMonitoring();
+    console.log(`${colors.green}🤖 Auto mode enabled${colors.reset}`);
+  }
+
+  disable() {
+    this.isEnabled = false;
+    this.stopMonitoring();
+    console.log(`${colors.yellow}Auto mode disabled${colors.reset}`);
+  }
+
+  setCommands(commands) {
+    this.commands = commands;
+  }
+
+  setTriggers(triggers) {
+    this.triggers = triggers;
+  }
+
+  startMonitoring() {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+    }
+    
+    this.checkInterval = setInterval(() => {
+      this.checkAutoActions();
+    }, 5000); // Check every 5 seconds
+  }
+
+  stopMonitoring() {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+  }
+
+  async checkAutoActions() {
+    if (!this.isEnabled) return;
+
+    try {
+      // Check for trigger conditions
+      const shouldExecute = this.checkTriggers();
+      
+      if (shouldExecute) {
+        await this.executeAutoCommands();
+      }
+    } catch (error) {
+      console.log(`${colors.red}Auto mode error: ${error.message}${colors.reset}`);
+    }
+  }
+
+  checkTriggers() {
+    // Simple trigger checking - can be enhanced
+    const currentTime = Date.now();
+    const timeSinceLastCheck = currentTime - this.lastCheck;
+    
+    // Check if enough time has passed (basic trigger)
+    if (timeSinceLastCheck > 30000) { // 30 seconds
+      this.lastCheck = currentTime;
+      return true;
+    }
+    
+    return false;
+  }
+
+  async executeAutoCommands() {
+    for (const command of this.commands) {
+      if (command.trim()) {
+        console.log(`${colors.blue}[AUTO] Executing: ${command}${colors.reset}`);
+        await this.agent.handleInput(command);
+      }
+    }
+  }
+}
+
+// Main NotABot class
+class NotABotAgent {
   constructor() {
     this.settings = new EnhancedSettingsManager();
     this.toolRegistry = new EnhancedToolRegistry();
@@ -776,6 +1069,8 @@ class EnhancedCLIAgent {
     this.oauthAuth = new OAuthAuthenticator();
     this.autocomplete = new AutocompleteManager();
     this.modalDb = new ModalDatabase();
+    this.database = new NotABotDatabase();
+    this.autoMode = new AutoModeManager(this);
     this.isRunning = false;
     this.rl = null;
     this.context = '';
@@ -783,11 +1078,26 @@ class EnhancedCLIAgent {
     this.currentInput = '';
     this.suggestionIndex = 0;
     this.suggestions = [];
+    this.sessionId = this.generateSessionId();
+  }
+
+  generateSessionId() {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   async initialize() {
-    console.log(`${colors.cyan}${colors.bright}Enhanced CLI Agent v${CONFIG.version}${colors.reset}`);
+    console.log(`${colors.cyan}${colors.bright}NotABot v${CONFIG.version}${colors.reset}`);
     console.log(`${colors.yellow}Type /help for available commands${colors.reset}\n`);
+    
+    // Initialize database
+    try {
+      await this.database.initialize();
+      await this.database.createSession(this.sessionId, this.settings.settings);
+      console.log(`📊 Database connected and session created: ${this.sessionId}`);
+    } catch (error) {
+      console.log(`${colors.red}❌ Database initialization failed: ${error.message}${colors.reset}`);
+      console.log(`${colors.yellow}Continuing without database...${colors.reset}`);
+    }
     
     // Check if API key is set
     if (!this.settings.get('apiKey')) {
@@ -799,6 +1109,13 @@ class EnhancedCLIAgent {
     // Start web server if enabled
     if (this.settings.get('webServerEnabled')) {
       await this.webServer.start(this.settings.get('webServerPort'));
+    }
+
+    // Initialize auto mode if enabled
+    if (this.settings.get('autoMode')) {
+      this.autoMode.enable();
+      this.autoMode.setCommands(this.settings.get('autoCommands') || []);
+      this.autoMode.setTriggers(this.settings.get('autoTriggers') || []);
     }
 
     this.isRunning = true;
@@ -902,7 +1219,7 @@ class EnhancedCLIAgent {
       
       case 'quit':
       case 'exit':
-        this.quit();
+        await this.quit();
         break;
       
       case 'clear':
@@ -989,6 +1306,14 @@ class EnhancedCLIAgent {
         this.handleCleanup();
         break;
       
+      case 'auto':
+        this.handleAutoMode(args);
+        break;
+      
+      case 'db':
+        this.handleDatabase(args);
+        break;
+      
       default:
         console.log(`${colors.red}Unknown command: /${cmd}${colors.reset}`);
         console.log(`Type /help for available commands`);
@@ -1020,6 +1345,18 @@ class EnhancedCLIAgent {
         yoloMode: this.yoloMode.isEnabled(),
         webServerRunning: this.webServer.isRunning()
       });
+      
+      // Save to database
+      if (this.database.initialized) {
+        await this.database.saveConversation(
+          this.sessionId,
+          message,
+          response,
+          null, // toolCalls
+          this.context,
+          this.settings.settings
+        );
+      }
       
       // Update context with this exchange
       this.context += `\nUser: ${message}\nAssistant: ${response}`;
@@ -1323,6 +1660,125 @@ class EnhancedCLIAgent {
     }
   }
 
+  async handleAutoMode(args) {
+    const action = args[0] || 'status';
+    
+    switch (action) {
+      case 'enable':
+        this.autoMode.enable();
+        this.settings.set('autoMode', true);
+        break;
+      case 'disable':
+        this.autoMode.disable();
+        this.settings.set('autoMode', false);
+        break;
+      case 'status':
+        console.log(`${colors.blue}Auto Mode Status:${colors.reset}`);
+        console.log(`  Enabled: ${this.autoMode.isEnabled ? 'Yes' : 'No'}`);
+        console.log(`  Commands: ${this.autoMode.commands.length}`);
+        console.log(`  Triggers: ${this.autoMode.triggers.length}`);
+        break;
+      case 'commands':
+        const commands = args.slice(1);
+        this.autoMode.setCommands(commands);
+        this.settings.set('autoCommands', commands);
+        console.log(`${colors.green}Auto commands updated${colors.reset}`);
+        break;
+      case 'triggers':
+        const triggers = args.slice(1);
+        this.autoMode.setTriggers(triggers);
+        this.settings.set('autoTriggers', triggers);
+        console.log(`${colors.green}Auto triggers updated${colors.reset}`);
+        break;
+      default:
+        console.log(`${colors.yellow}Usage: /auto [enable|disable|status|commands|triggers]${colors.reset}`);
+    }
+  }
+
+  async handleDatabase(args) {
+    const action = args[0] || 'status';
+    
+    if (!this.database.initialized) {
+      console.log(`${colors.red}❌ Database not initialized${colors.reset}`);
+      return;
+    }
+    
+    switch (action) {
+      case 'status':
+        const stats = await this.database.getDatabaseStats();
+        console.log(`${colors.blue}📊 Database Statistics:${colors.reset}`);
+        console.log(`  Conversations: ${stats.conversations_count || 0}`);
+        console.log(`  Sessions: ${stats.sessions_count || 0}`);
+        console.log(`  Settings: ${stats.settings_count || 0}`);
+        console.log(`  Indexed Files: ${stats.indexed_files_count || 0}`);
+        console.log(`  Search History: ${stats.search_history_count || 0}`);
+        console.log(`  Auto Mode Logs: ${stats.auto_mode_logs_count || 0}`);
+        console.log(`  Web Server Logs: ${stats.web_server_logs_count || 0}`);
+        console.log(`  Recent Conversations (24h): ${stats.recent_conversations_24h || 0}`);
+        console.log(`  Database Size: ${((stats.database_size_bytes || 0) / 1024).toFixed(2)} KB`);
+        break;
+      
+      case 'conversations':
+        const limit = parseInt(args[1]) || 10;
+        const conversations = await this.database.getConversations(null, limit);
+        console.log(`${colors.blue}📝 Recent Conversations:${colors.reset}`);
+        conversations.forEach((conv, index) => {
+          const date = new Date(conv.timestamp).toLocaleString();
+          console.log(`  ${index + 1}. [${date}] ${conv.user_message?.substring(0, 50)}...`);
+        });
+        break;
+      
+      case 'sessions':
+        const sessions = await this.database.getSessions(10);
+        console.log(`${colors.blue}🕐 Recent Sessions:${colors.reset}`);
+        sessions.forEach((session, index) => {
+          const startDate = new Date(session.start_time).toLocaleString();
+          console.log(`  ${index + 1}. [${startDate}] ${session.session_id} (${session.total_messages} messages)`);
+        });
+        break;
+      
+      case 'search':
+        const query = args.slice(1).join(' ');
+        if (!query) {
+          console.log(`${colors.yellow}Usage: /db search <query>${colors.reset}`);
+          return;
+        }
+        const searchHistory = await this.database.getSearchHistory(20);
+        const filteredHistory = searchHistory.filter(h => 
+          h.query.toLowerCase().includes(query.toLowerCase())
+        );
+        console.log(`${colors.blue}🔍 Search History for "${query}":${colors.reset}`);
+        filteredHistory.forEach((item, index) => {
+          const date = new Date(item.timestamp).toLocaleString();
+          console.log(`  ${index + 1}. [${date}] "${item.query}" (${item.results_count} results)`);
+        });
+        break;
+      
+      case 'cleanup':
+        const days = parseInt(args[1]) || 30;
+        console.log(`${colors.yellow}🧹 Cleaning up data older than ${days} days...${colors.reset}`);
+        await this.database.cleanupOldData(days);
+        console.log(`${colors.green}✅ Cleanup completed${colors.reset}`);
+        break;
+      
+      case 'backup':
+        const backupPath = args[1] || `notabot_backup_${Date.now()}.db`;
+        console.log(`${colors.yellow}💾 Creating backup...${colors.reset}`);
+        await this.database.backup(backupPath);
+        console.log(`${colors.green}✅ Backup created: ${backupPath}${colors.reset}`);
+        break;
+      
+      default:
+        console.log(`${colors.yellow}Database Commands:${colors.reset}`);
+        console.log(`  /db status        - Show database statistics`);
+        console.log(`  /db conversations [limit] - Show recent conversations`);
+        console.log(`  /db sessions      - Show recent sessions`);
+        console.log(`  /db search <query> - Search history`);
+        console.log(`  /db cleanup [days] - Clean up old data`);
+        console.log(`  /db backup [path]  - Create database backup`);
+    }
+  }
+
   showHelp() {
     console.log(`${colors.bright}Available Commands:${colors.reset}`);
     console.log(`  /help       - Show this help message`);
@@ -1348,6 +1804,8 @@ class EnhancedCLIAgent {
     console.log(`  /history    - Show recent history`);
     console.log(`  /stats      - Show modal database statistics`);
     console.log(`  /cleanup    - Clean up old data`);
+    console.log(`  /auto       - Control auto mode`);
+    console.log(`  /db         - Database management`);
     console.log(``);
     console.log(`${colors.bright}Tool Usage:${colors.reset}`);
     console.log(`  @list_directory path=.`);
@@ -1443,17 +1901,36 @@ class EnhancedCLIAgent {
 
   clear() {
     console.clear();
-    console.log(`${colors.cyan}${colors.bright}Enhanced CLI Agent v${CONFIG.version}${colors.reset}`);
+    console.log(`${colors.cyan}${colors.bright}NotABot v${CONFIG.version}${colors.reset}`);
     console.log(`${colors.yellow}Type /help for available commands${colors.reset}\n`);
   }
 
-  quit() {
+  async quit() {
     const stats = this.history.getSessionStats();
     console.log(`${colors.yellow}Session Summary:${colors.reset}`);
     console.log(`  Total messages: ${stats.totalMessages}`);
     console.log(`  Session duration: ${stats.sessionDuration} seconds`);
     console.log(`  YOLO mode: ${this.yoloMode.isEnabled() ? 'Enabled' : 'Disabled'}`);
     console.log(`  Web server: ${this.webServer.isRunning ? 'Running' : 'Stopped'}`);
+    
+    // Save session data to database
+    if (this.database.initialized) {
+      try {
+        await this.database.updateSession(this.sessionId, {
+          totalMessages: stats.totalMessages,
+          userMessages: stats.userMessages,
+          assistantMessages: stats.assistantMessages,
+          toolCalls: stats.toolCalls,
+          endTime: new Date().toISOString()
+        });
+        console.log(`${colors.green}✅ Session data saved to database${colors.reset}`);
+      } catch (error) {
+        console.log(`${colors.red}❌ Failed to save session data: ${error.message}${colors.reset}`);
+      }
+      
+      // Close database connection
+      await this.database.close();
+    }
     
     if (this.webServer.isRunning) {
       this.webServer.stop();
@@ -1471,13 +1948,18 @@ class EnhancedCLIAgent {
 // Main execution
 async function main() {
   try {
-    const agent = new EnhancedCLIAgent();
+    const agent = new NotABotAgent();
     await agent.initialize();
   } catch (error) {
-    console.error(`${colors.red}Error starting CLI agent: ${error.message}${colors.reset}`);
+    console.error(`${colors.red}Error starting NotABot: ${error.message}${colors.reset}`);
     process.exit(1);
   }
 }
 
-// Run the application
-main(); 
+// Run the application if this is the main module
+const isMainModule = process.argv[1] && process.argv[1].endsWith('notabot.js');
+if (isMainModule) {
+  main();
+}
+
+export { main }; 
