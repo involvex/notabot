@@ -32,7 +32,7 @@
     "dashboard",
     "automation"
   ],
-  "author": "Your Name",
+  "author": "involvex",
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0"
@@ -57,12 +57,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/notabot.git"
+    "url": "git+https://github.com/involvex/notabot.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/notabot/issues"
+    "url": "https://github.com/involvex/notabot/issues"
   },
-  "homepage": "https://github.com/yourusername/notabot#readme",
+  "homepage": "https://github.com/involvex/notabot#readme",
   "preferGlobal": true,
   "os": [
     "darwin",
