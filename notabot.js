@@ -645,7 +645,7 @@ class WebServer {
         /* Navigation Bar */
         .navbar { 
             background: #2d2d2d; 
-            padding: 15px 20px; 
+            padding: 0;
             border-bottom: 2px solid #444;
             position: sticky;
             top: 0;
@@ -655,6 +655,7 @@ class WebServer {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 20px;
         }
         .navbar-brand {
             display: flex;
@@ -663,6 +664,82 @@ class WebServer {
         }
         .navbar-brand h1 { margin: 0; font-size: 24px; }
         .navbar-brand .version { color: #888; font-size: 14px; }
+        
+        /* Navigation Menu */
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        .nav-item {
+            position: relative;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 20px 15px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .nav-link:hover {
+            background: #3d3d3d;
+            border-bottom-color: #2196F3;
+        }
+        .nav-link.active {
+            background: #3d3d3d;
+            border-bottom-color: #2196F3;
+            color: #2196F3;
+        }
+        .nav-link .icon {
+            font-size: 16px;
+        }
+        
+        /* Dropdown Menu */
+        .dropdown {
+            position: relative;
+        }
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 0 0 5px 5px;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 1001;
+        }
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .dropdown-item {
+            display: block;
+            padding: 12px 15px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 13px;
+            border-bottom: 1px solid #444;
+            transition: background 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background: #3d3d3d;
+            color: #2196F3;
+        }
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        
         .navbar-controls {
             display: flex;
             gap: 10px;
@@ -852,6 +929,81 @@ class WebServer {
                 <h1>🤖 NotABot</h1>
                 <span class="version">v1.0.0</span>
             </div>
+            
+            <div class="navbar-menu">
+                <div class="nav-item">
+                    <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard')">
+                        <span class="icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                
+                <div class="nav-item dropdown">
+                    <a href="#settings" class="nav-link" onclick="showSection('settings')">
+                        <span class="icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="#general" class="dropdown-item" onclick="showSubSection('general')">General Settings</a>
+                        <a href="#auto-mode" class="dropdown-item" onclick="showSubSection('auto-mode')">Auto Mode Config</a>
+                        <a href="#autocode" class="dropdown-item" onclick="showSubSection('autocode')">AutoCode Settings</a>
+                        <a href="#database" class="dropdown-item" onclick="showSubSection('database')">Database Config</a>
+                    </div>
+                </div>
+                
+                <div class="nav-item dropdown">
+                    <a href="#tools" class="nav-link" onclick="showSection('tools')">
+                        <span class="icon">🛠️</span>
+                        <span>Tools</span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="#analyze" class="dropdown-item" onclick="showSubSection('analyze')">Code Analysis</a>
+                        <a href="#index" class="dropdown-item" onclick="showSubSection('index')">File Indexing</a>
+                        <a href="#search" class="dropdown-item" onclick="showSubSection('search')">Search Files</a>
+                        <a href="#windows-index" class="dropdown-item" onclick="showSubSection('windows-index')">Windows Index</a>
+                    </div>
+                </div>
+                
+                <div class="nav-item dropdown">
+                    <a href="#history" class="nav-link" onclick="showSection('history')">
+                        <span class="icon">📝</span>
+                        <span>History</span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="#conversations" class="dropdown-item" onclick="showSubSection('conversations')">Conversations</a>
+                        <a href="#sessions" class="dropdown-item" onclick="showSubSection('sessions')">Sessions</a>
+                        <a href="#logs" class="dropdown-item" onclick="showSubSection('logs')">System Logs</a>
+                        <a href="#stats" class="dropdown-item" onclick="showSubSection('stats')">Statistics</a>
+                    </div>
+                </div>
+                
+                <div class="nav-item dropdown">
+                    <a href="#controls" class="nav-link" onclick="showSection('controls')">
+                        <span class="icon">🎮</span>
+                        <span>Controls</span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="#yolo-mode" class="dropdown-item" onclick="toggleYolo()">Toggle YOLO Mode</a>
+                        <a href="#clear-history" class="dropdown-item" onclick="clearHistory()">Clear History</a>
+                        <a href="#reset-session" class="dropdown-item" onclick="resetSession()">Reset Session</a>
+                        <a href="#webserver" class="dropdown-item" onclick="toggleWebServer()">Web Server</a>
+                    </div>
+                </div>
+                
+                <div class="nav-item dropdown">
+                    <a href="#help" class="nav-link" onclick="showSection('help')">
+                        <span class="icon">❓</span>
+                        <span>Help</span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="#commands" class="dropdown-item" onclick="showSubSection('commands')">CLI Commands</a>
+                        <a href="#tools-help" class="dropdown-item" onclick="showSubSection('tools-help')">Available Tools</a>
+                        <a href="#api-docs" class="dropdown-item" onclick="showSubSection('api-docs')">API Documentation</a>
+                        <a href="#troubleshooting" class="dropdown-item" onclick="showSubSection('troubleshooting')">Troubleshooting</a>
+                    </div>
+                </div>
+            </div>
+            
             <div class="navbar-controls">
                 <div id="connection-status" class="status-indicator status-online">
                     <span id="status-icon">🟢</span>
@@ -868,157 +1020,187 @@ class WebServer {
             <p>Full automated CLI agent with live monitoring and control</p>
         </div>
         
-        <div class="grid">
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('status-section')">
-                    <h2>📊 Status</h2>
-                    <button class="section-toggle" id="status-toggle">−</button>
+        <!-- Dashboard Section -->
+        <div id="dashboard-section">
+            <div class="grid">
+                <div class="card">
+                    <div class="section-header" onclick="toggleSection('status-section')">
+                        <h2>📊 Status</h2>
+                        <button class="section-toggle" id="status-toggle">−</button>
+                    </div>
+                    <div id="status-section" class="section-content expanded">
+                        <div id="status"></div>
+                    </div>
                 </div>
-                <div id="status-section" class="section-content expanded">
-                    <div id="status"></div>
+                
+                <div class="card">
+                    <div class="section-header" onclick="toggleSection('history-section')">
+                        <h2>📝 Recent History</h2>
+                        <button class="section-toggle" id="history-toggle">−</button>
+                    </div>
+                    <div id="history-section" class="section-content expanded">
+                        <div id="history" class="history"></div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('settings-section')">
-                    <h2>⚙️ Settings Management</h2>
-                    <button class="section-toggle" id="settings-toggle">−</button>
+        </div>
+        
+        <!-- Settings Section -->
+        <div id="settings-section" style="display: none;">
+            <div class="grid">
+                <div class="card">
+                    <div class="section-header" onclick="toggleSection('general-settings-section')">
+                        <h2>⚙️ General Settings</h2>
+                        <button class="section-toggle" id="general-settings-toggle">−</button>
+                    </div>
+                    <div id="general-settings-section" class="section-content expanded">
+                        <div id="settings-form" class="settings-form">
+                            <div class="form-group">
+                                <label>Model:</label>
+                                <select id="model" onchange="updateSetting('model', this.value)">
+                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                    <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Max Tokens:</label>
+                                <input type="number" id="maxTokens" onchange="updateSetting('maxTokens', parseInt(this.value))" min="100" max="8192">
+                            </div>
+                            <div class="form-group">
+                                <label>Temperature:</label>
+                                <input type="number" id="temperature" onchange="updateSetting('temperature', parseFloat(this.value))" min="0" max="2" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Web Server Port:</label>
+                                <input type="number" id="webServerPort" onchange="updateSetting('webServerPort', parseInt(this.value))" min="1000" max="9999">
+                            </div>
+                            <div class="form-group">
+                                <label>Debug Mode:</label>
+                                <input type="checkbox" id="debugMode" onchange="updateSetting('debugMode', this.checked)">
+                            </div>
+                            <div class="form-group">
+                                <label>Auto Mode:</label>
+                                <input type="checkbox" id="autoMode" onchange="updateSetting('autoMode', this.checked)">
+                            </div>
+                            <button class="btn btn-primary" onclick="saveAllSettings()">Save All Settings</button>
+                        </div>
+                    </div>
                 </div>
-                <div id="settings-section" class="section-content expanded">
-                    <div id="settings-form" class="settings-form">
-                        <div class="form-group">
-                            <label>Model:</label>
-                            <select id="model" onchange="updateSetting('model', this.value)">
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
-                            </select>
+                
+                <div class="card">
+                    <div class="section-header" onclick="toggleSection('auto-config-section')">
+                        <h2>🤖 Auto Mode Configuration</h2>
+                        <button class="section-toggle" id="auto-config-toggle">−</button>
+                    </div>
+                    <div id="auto-config-section" class="section-content expanded">
+                        <div id="auto-config" class="settings-form">
+                            <div class="form-group">
+                                <label>Auto Commands (one per line):</label>
+                                <textarea id="autoCommands" rows="4" placeholder="Enter commands to run automatically..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Auto Triggers (one per line):</label>
+                                <textarea id="autoTriggers" rows="4" placeholder="Enter trigger patterns..."></textarea>
+                            </div>
+                            <button class="btn btn-success" onclick="saveAutoMode()">Save Auto Mode</button>
                         </div>
-                        <div class="form-group">
-                            <label>Max Tokens:</label>
-                            <input type="number" id="maxTokens" onchange="updateSetting('maxTokens', parseInt(this.value))" min="100" max="8192">
-                        </div>
-                        <div class="form-group">
-                            <label>Temperature:</label>
-                            <input type="number" id="temperature" onchange="updateSetting('temperature', parseFloat(this.value))" min="0" max="2" step="0.1">
-                        </div>
-                        <div class="form-group">
-                            <label>Web Server Port:</label>
-                            <input type="number" id="webServerPort" onchange="updateSetting('webServerPort', parseInt(this.value))" min="1000" max="9999">
-                        </div>
-                        <div class="form-group">
-                            <label>Debug Mode:</label>
-                            <input type="checkbox" id="debugMode" onchange="updateSetting('debugMode', this.checked)">
-                        </div>
-                        <div class="form-group">
-                            <label>Auto Mode:</label>
-                            <input type="checkbox" id="autoMode" onchange="updateSetting('autoMode', this.checked)">
-                        </div>
-                        <button class="btn btn-primary" onclick="saveAllSettings()">Save All Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tools Section -->
+        <div id="tools-section" style="display: none;">
+            <div class="grid">
+                <div class="card">
+                    <div class="section-header" onclick="toggleSection('database-section')">
+                        <h2>🗄️ Database Overview</h2>
+                        <button class="section-toggle" id="database-toggle">−</button>
+                    </div>
+                    <div id="database-section" class="section-content expanded">
+                        <div id="database-stats"></div>
+                        <button class="btn btn-primary" onclick="loadDatabaseStats()">Refresh Stats</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-header" onclick="toggleSection('files-section')">
+                        <h2>📁 Indexed Files</h2>
+                        <button class="section-toggle" id="files-toggle">−</button>
+                    </div>
+                    <div id="files-section" class="section-content expanded">
+                        <div id="indexed-files"></div>
+                        <button class="btn btn-success" onclick="loadIndexedFiles()">Refresh Files</button>
+                        <button class="btn btn-warning" onclick="indexCurrentDirectory()">Index Current Directory</button>
                     </div>
                 </div>
             </div>
             
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('auto-config-section')">
-                    <h2>🤖 Auto Mode Configuration</h2>
-                    <button class="section-toggle" id="auto-config-toggle">−</button>
+            <div class="grid">
+                <div class="card">
+                    <div class="section-header" onclick="toggleSection('analyze-section')">
+                        <h2>🔍 Code Analysis</h2>
+                        <button class="section-toggle" id="analyze-toggle">−</button>
+                    </div>
+                    <div id="analyze-section" class="section-content expanded">
+                        <div id="analyze-controls">
+                            <div class="form-group">
+                                <label>Analysis Path:</label>
+                                <input type="text" id="analyzePath" placeholder="Current directory or specific path">
+                            </div>
+                            <button class="btn btn-primary" onclick="analyzeFiles()">Analyze Files</button>
+                            <button class="btn btn-success" onclick="listRecommendations()">List Recommendations</button>
+                        </div>
+                        <div id="analyze-results"></div>
+                    </div>
                 </div>
-                <div id="auto-config-section" class="section-content expanded">
-                    <div id="auto-config" class="settings-form">
-                        <div class="form-group">
-                            <label>Auto Commands (one per line):</label>
-                            <textarea id="autoCommands" rows="4" placeholder="Enter commands to run automatically..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Auto Triggers (one per line):</label>
-                            <textarea id="autoTriggers" rows="4" placeholder="Enter trigger patterns..."></textarea>
-                        </div>
-                        <button class="btn btn-success" onclick="saveAutoMode()">Save Auto Mode</button>
+                
+                <div class="card">
+                    <div class="section-header" onclick="toggleSection('recommendations-section')">
+                        <h2>📋 Analysis Recommendations</h2>
+                        <button class="section-toggle" id="recommendations-toggle">−</button>
+                    </div>
+                    <div id="recommendations-section" class="section-content expanded">
+                        <div id="recommendations-list"></div>
+                        <div id="recommendation-preview"></div>
                     </div>
                 </div>
             </div>
-            
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('history-section')">
-                    <h2>📝 Recent History</h2>
-                    <button class="section-toggle" id="history-toggle">−</button>
-                </div>
-                <div id="history-section" class="section-content expanded">
+        </div>
+        
+        <!-- History Section -->
+        <div id="history-section" style="display: none;">
+            <div class="grid">
+                <div class="card">
+                    <h2>📝 Conversation History</h2>
                     <div id="history" class="history"></div>
                 </div>
             </div>
-            
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('controls-section')">
-                    <h2>🎮 Controls</h2>
-                    <button class="section-toggle" id="controls-toggle">−</button>
-                </div>
-                <div id="controls-section" class="section-content expanded">
-                    <button class="btn btn-warning" onclick="toggleYolo()">Toggle YOLO Mode</button>
-                    <button class="btn btn-danger" onclick="clearHistory()">Clear History</button>
-                    <button class="btn btn-primary" onclick="resetSession()">Reset Session</button>
-                    <button class="btn btn-success" onclick="startWebServer()">Start Web Server</button>
-                    <button class="btn btn-danger" onclick="stopWebServer()">Stop Web Server</button>
-                </div>
-            </div>
         </div>
         
-        <div class="grid">
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('database-section')">
-                    <h2>🗄️ Database Overview</h2>
-                    <button class="section-toggle" id="database-toggle">−</button>
-                </div>
-                <div id="database-section" class="section-content expanded">
-                    <div id="database-stats"></div>
-                    <button class="btn btn-primary" onclick="loadDatabaseStats()">Refresh Stats</button>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('files-section')">
-                    <h2>📁 Indexed Files</h2>
-                    <button class="section-toggle" id="files-toggle">−</button>
-                </div>
-                <div id="files-section" class="section-content expanded">
-                    <div id="indexed-files"></div>
-                    <button class="btn btn-success" onclick="loadIndexedFiles()">Refresh Files</button>
-                    <button class="btn btn-warning" onclick="indexCurrentDirectory()">Index Current Directory</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="grid">
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('analyze-section')">
-                    <h2>🔍 Code Analysis</h2>
-                    <button class="section-toggle" id="analyze-toggle">−</button>
-                </div>
-                <div id="analyze-section" class="section-content expanded">
-                    <div id="analyze-controls">
-                        <div class="form-group">
-                            <label>Analysis Path:</label>
-                            <input type="text" id="analyzePath" placeholder="Current directory or specific path">
-                        </div>
-                        <button class="btn btn-primary" onclick="analyzeFiles()">Analyze Files</button>
-                        <button class="btn btn-success" onclick="listRecommendations()">List Recommendations</button>
+        <!-- Controls Section -->
+        <div id="controls-section" style="display: none;">
+            <div class="grid">
+                <div class="card">
+                    <h2>🎮 System Controls</h2>
+                    <div class="status">
+                        <button class="btn btn-warning" onclick="toggleYolo()">Toggle YOLO Mode</button>
+                        <button class="btn btn-danger" onclick="clearHistory()">Clear History</button>
+                        <button class="btn btn-primary" onclick="resetSession()">Reset Session</button>
+                        <button class="btn btn-success" onclick="startWebServer()">Start Web Server</button>
+                        <button class="btn btn-danger" onclick="stopWebServer()">Stop Web Server</button>
                     </div>
-                    <div id="analyze-results"></div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="section-header" onclick="toggleSection('recommendations-section')">
-                    <h2>📋 Analysis Recommendations</h2>
-                    <button class="section-toggle" id="recommendations-toggle">−</button>
-                </div>
-                <div id="recommendations-section" class="section-content expanded">
-                    <div id="recommendations-list"></div>
-                    <div id="recommendation-preview"></div>
                 </div>
             </div>
         </div>
+        
+        <!-- Help Section -->
+        <div id="help-section" style="display: none;">
+            <!-- Help content will be loaded dynamically -->
+        </div>
+        
+
     </div>
 
     <script>
@@ -1409,6 +1591,185 @@ class WebServer {
                     }
                 }).catch(error => {
                     alert('❌ Failed to apply recommendation: ' + error.message);
+                });
+            }
+        }
+        
+        // Navigation functionality
+        function showSection(sectionName) {
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide sections based on navigation
+            const sections = ['dashboard', 'settings', 'tools', 'history', 'controls', 'help'];
+            sections.forEach(section => {
+                const sectionElement = document.getElementById(section + '-section');
+                if (sectionElement) {
+                    if (section === sectionName) {
+                        sectionElement.style.display = 'block';
+                    } else {
+                        sectionElement.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Load section-specific content
+            switch(sectionName) {
+                case 'dashboard':
+                    loadStatus();
+                    loadHistory();
+                    break;
+                case 'settings':
+                    loadSettings();
+                    break;
+                case 'tools':
+                    loadDatabaseStats();
+                    loadIndexedFiles();
+                    break;
+                case 'history':
+                    loadHistory();
+                    break;
+                case 'controls':
+                    loadStatus();
+                    break;
+                case 'help':
+                    loadHelp();
+                    break;
+            }
+        }
+        
+        function showSubSection(subSectionName) {
+            // Handle sub-section navigation
+            console.log('Showing sub-section:', subSectionName);
+            
+            switch(subSectionName) {
+                case 'general':
+                    showSection('settings');
+                    break;
+                case 'auto-mode':
+                    showSection('settings');
+                    break;
+                case 'autocode':
+                    showSection('settings');
+                    break;
+                case 'database':
+                    showSection('tools');
+                    break;
+                case 'analyze':
+                    showSection('tools');
+                    break;
+                case 'index':
+                    showSection('tools');
+                    break;
+                case 'search':
+                    showSection('tools');
+                    break;
+                case 'windows-index':
+                    showSection('tools');
+                    break;
+                case 'conversations':
+                    showSection('history');
+                    break;
+                case 'sessions':
+                    showSection('history');
+                    break;
+                case 'logs':
+                    showSection('history');
+                    break;
+                case 'stats':
+                    showSection('history');
+                    break;
+                case 'yolo-mode':
+                    toggleYolo();
+                    break;
+                case 'clear-history':
+                    clearHistory();
+                    break;
+                case 'reset-session':
+                    resetSession();
+                    break;
+                case 'webserver':
+                    toggleWebServer();
+                    break;
+                case 'commands':
+                    showSection('help');
+                    break;
+                case 'tools-help':
+                    showSection('help');
+                    break;
+                case 'api-docs':
+                    showSection('help');
+                    break;
+                case 'troubleshooting':
+                    showSection('help');
+                    break;
+            }
+        }
+        
+        function loadSettings() {
+            // Load settings form data
+            fetch('/api/settings').then(r => r.json()).then(data => {
+                updateSettingsForm(data);
+            });
+        }
+        
+        function loadHelp() {
+            const helpSection = document.getElementById('help-section');
+            if (helpSection) {
+                helpSection.innerHTML = \`
+                    <div class="card">
+                        <h2>❓ Help & Documentation</h2>
+                        <div class="status">
+                            <h3>CLI Commands</h3>
+                            <p><strong>/help</strong> - Show available commands</p>
+                            <p><strong>/autocode enable</strong> - Enable AutoCode mode</p>
+                            <p><strong>/analyze</strong> - Analyze code files</p>
+                            <p><strong>/webserver start</strong> - Start web server</p>
+                            <p><strong>/yolo</strong> - Toggle YOLO mode</p>
+                            <p><strong>/auto</strong> - Control auto mode</p>
+                        </div>
+                        
+                        <div class="status">
+                            <h3>Available Tools</h3>
+                            <p><strong>@list_directory</strong> - List directory contents</p>
+                            <p><strong>@read_file</strong> - Read file contents</p>
+                            <p><strong>@write_file</strong> - Write to file</p>
+                            <p><strong>@run_shell_command</strong> - Execute shell commands</p>
+                        </div>
+                        
+                        <div class="status">
+                            <h3>Web Interface</h3>
+                            <p>Use the navigation menu above to access different sections:</p>
+                            <ul>
+                                <li><strong>Dashboard</strong> - Main overview and status</li>
+                                <li><strong>Settings</strong> - Configuration management</li>
+                                <li><strong>Tools</strong> - Code analysis and file operations</li>
+                                <li><strong>History</strong> - Conversation and session history</li>
+                                <li><strong>Controls</strong> - System controls and actions</li>
+                                <li><strong>Help</strong> - Documentation and assistance</li>
+                            </ul>
+                        </div>
+                    </div>
+                \`;
+            }
+        }
+        
+        function toggleWebServer() {
+            const status = document.getElementById('connection-status');
+            if (status.classList.contains('status-online')) {
+                fetch('/api/webserver/stop', { method: 'POST' }).then(() => {
+                    status.className = 'status-indicator status-offline';
+                    document.getElementById('status-icon').textContent = '🔴';
+                    document.getElementById('status-text').textContent = 'Offline';
+                });
+            } else {
+                fetch('/api/webserver/start', { method: 'POST' }).then(() => {
+                    status.className = 'status-indicator status-online';
+                    document.getElementById('status-icon').textContent = '🟢';
+                    document.getElementById('status-text').textContent = 'Online';
                 });
             }
         }
