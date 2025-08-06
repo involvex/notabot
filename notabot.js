@@ -639,145 +639,384 @@ class WebServer {
 <head>
     <title>NotABot - Live Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #1e1e1e; color: #fff; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        body { font-family: Arial, sans-serif; margin: 0; background: #1e1e1e; color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        
+        /* Navigation Bar */
+        .navbar { 
+            background: #2d2d2d; 
+            padding: 15px 20px; 
+            border-bottom: 2px solid #444;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .navbar-brand h1 { margin: 0; font-size: 24px; }
+        .navbar-brand .version { color: #888; font-size: 14px; }
+        .navbar-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-online { background: #4CAF50; color: white; }
+        .status-offline { background: #f44336; color: white; }
+        
+        /* Main Content */
+        .main-content { padding: 20px; }
         .header { background: #2d2d2d; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: #2d2d2d; padding: 20px; border-radius: 8px; }
+        
+        /* Collapsible Sections */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px 0;
+            border-bottom: 1px solid #444;
+            margin-bottom: 15px;
+        }
+        .section-header h2 { margin: 0; }
+        .section-toggle {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .section-content {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .section-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+        .section-content.expanded {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        
+        /* Enhanced Status */
         .status { background: #3d3d3d; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .yolo { background: #ff4444; color: white; padding: 10px; border-radius: 5px; }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .status-item {
+            background: #4a4a4a;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
+        }
+        .status-item h4 { margin: 0 0 8px 0; color: #2196F3; }
+        .status-item p { margin: 0; font-size: 14px; }
+        
+        /* Enhanced History */
         .history { max-height: 400px; overflow-y: auto; }
-        .history-item { padding: 5px; border-bottom: 1px solid #444; }
-        .user { color: #4CAF50; }
-        .assistant { color: #2196F3; }
-        .tool { color: #FF9800; }
-        .error { color: #f44336; }
+        .history-item { 
+            padding: 10px; 
+            border-bottom: 1px solid #444; 
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .history-item:hover {
+            background: #3a3a3a;
+            border-left-color: #2196F3;
+        }
+        .history-item .timestamp {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .history-item .content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .user { color: #4CAF50; border-left-color: #4CAF50; }
+        .assistant { color: #2196F3; border-left-color: #2196F3; }
+        .tool { color: #FF9800; border-left-color: #FF9800; }
+        .error { color: #f44336; border-left-color: #f44336; }
+        
+        /* Enhanced Settings */
         .settings-form { background: #3d3d3d; padding: 15px; border-radius: 5px; margin: 10px 0; }
         .form-group { margin: 10px 0; }
-        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group input, .form-group select, .form-group textarea { 
             width: 100%; padding: 8px; background: #555; border: 1px solid #666; color: #fff; border-radius: 3px; 
         }
-        .btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #2196F3;
+            outline: none;
+        }
+        
+        /* Buttons */
+        .btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; transition: all 0.2s ease; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         .btn-primary { background: #2196F3; color: white; }
         .btn-success { background: #4CAF50; color: white; }
         .btn-warning { background: #FF9800; color: white; }
         .btn-danger { background: #f44336; color: white; }
-        .auto-mode { background: #4CAF50; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .btn-small { padding: 4px 8px; font-size: 12px; }
+        
+        /* Mode Indicators */
+        .mode-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 2px;
+        }
+        .yolo { background: #ff4444; color: white; }
+        .auto-mode { background: #4CAF50; color: white; }
+        .autocode-mode { background: #9C27B0; color: white; }
+        
+        /* Database Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .stat-item {
+            background: #4a4a4a;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        /* File List */
+        .file-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #444;
+            font-size: 13px;
+        }
+        .file-name { color: #2196F3; }
+        .file-size { color: #888; font-size: 11px; }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .navbar-content { flex-direction: column; gap: 10px; }
+            .status-grid { grid-template-columns: 1fr; }
+        }
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div class="container">
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <h1>🤖 NotABot</h1>
+                <span class="version">v1.0.0</span>
+            </div>
+            <div class="navbar-controls">
+                <div id="connection-status" class="status-indicator status-online">
+                    <span id="status-icon">🟢</span>
+                    <span id="status-text">Online</span>
+                </div>
+                <div id="mode-indicators"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
         <div class="header">
-            <h1>🤖 NotABot Dashboard</h1>
+            <h1>📊 Live Dashboard</h1>
             <p>Full automated CLI agent with live monitoring and control</p>
         </div>
         
         <div class="grid">
             <div class="card">
-                <h2>📊 Status</h2>
-                <div id="status"></div>
-            </div>
-            
-            <div class="card">
-                <h2>⚙️ Settings Management</h2>
-                <div id="settings-form" class="settings-form">
-                    <div class="form-group">
-                        <label>Model:</label>
-                        <select id="model" onchange="updateSetting('model', this.value)">
-                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                            <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Max Tokens:</label>
-                        <input type="number" id="maxTokens" onchange="updateSetting('maxTokens', parseInt(this.value))" min="100" max="8192">
-                    </div>
-                    <div class="form-group">
-                        <label>Temperature:</label>
-                        <input type="number" id="temperature" onchange="updateSetting('temperature', parseFloat(this.value))" min="0" max="2" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Web Server Port:</label>
-                        <input type="number" id="webServerPort" onchange="updateSetting('webServerPort', parseInt(this.value))" min="1000" max="9999">
-                    </div>
-                    <div class="form-group">
-                        <label>Debug Mode:</label>
-                        <input type="checkbox" id="debugMode" onchange="updateSetting('debugMode', this.checked)">
-                    </div>
-                    <div class="form-group">
-                        <label>Auto Mode:</label>
-                        <input type="checkbox" id="autoMode" onchange="updateSetting('autoMode', this.checked)">
-                    </div>
-                    <button class="btn btn-primary" onclick="saveAllSettings()">Save All Settings</button>
+                <div class="section-header" onclick="toggleSection('status-section')">
+                    <h2>📊 Status</h2>
+                    <button class="section-toggle" id="status-toggle">−</button>
+                </div>
+                <div id="status-section" class="section-content expanded">
+                    <div id="status"></div>
                 </div>
             </div>
             
             <div class="card">
-                <h2>🤖 Auto Mode Configuration</h2>
-                <div id="auto-config" class="settings-form">
-                    <div class="form-group">
-                        <label>Auto Commands (one per line):</label>
-                        <textarea id="autoCommands" rows="4" placeholder="Enter commands to run automatically..."></textarea>
+                <div class="section-header" onclick="toggleSection('settings-section')">
+                    <h2>⚙️ Settings Management</h2>
+                    <button class="section-toggle" id="settings-toggle">−</button>
+                </div>
+                <div id="settings-section" class="section-content expanded">
+                    <div id="settings-form" class="settings-form">
+                        <div class="form-group">
+                            <label>Model:</label>
+                            <select id="model" onchange="updateSetting('model', this.value)">
+                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Max Tokens:</label>
+                            <input type="number" id="maxTokens" onchange="updateSetting('maxTokens', parseInt(this.value))" min="100" max="8192">
+                        </div>
+                        <div class="form-group">
+                            <label>Temperature:</label>
+                            <input type="number" id="temperature" onchange="updateSetting('temperature', parseFloat(this.value))" min="0" max="2" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Web Server Port:</label>
+                            <input type="number" id="webServerPort" onchange="updateSetting('webServerPort', parseInt(this.value))" min="1000" max="9999">
+                        </div>
+                        <div class="form-group">
+                            <label>Debug Mode:</label>
+                            <input type="checkbox" id="debugMode" onchange="updateSetting('debugMode', this.checked)">
+                        </div>
+                        <div class="form-group">
+                            <label>Auto Mode:</label>
+                            <input type="checkbox" id="autoMode" onchange="updateSetting('autoMode', this.checked)">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveAllSettings()">Save All Settings</button>
                     </div>
-                    <div class="form-group">
-                        <label>Auto Triggers (one per line):</label>
-                        <textarea id="autoTriggers" rows="4" placeholder="Enter trigger patterns..."></textarea>
-                    </div>
-                    <button class="btn btn-success" onclick="saveAutoMode()">Save Auto Mode</button>
                 </div>
             </div>
             
             <div class="card">
-                <h2>📝 Recent History</h2>
-                <div id="history" class="history"></div>
+                <div class="section-header" onclick="toggleSection('auto-config-section')">
+                    <h2>🤖 Auto Mode Configuration</h2>
+                    <button class="section-toggle" id="auto-config-toggle">−</button>
+                </div>
+                <div id="auto-config-section" class="section-content expanded">
+                    <div id="auto-config" class="settings-form">
+                        <div class="form-group">
+                            <label>Auto Commands (one per line):</label>
+                            <textarea id="autoCommands" rows="4" placeholder="Enter commands to run automatically..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Auto Triggers (one per line):</label>
+                            <textarea id="autoTriggers" rows="4" placeholder="Enter trigger patterns..."></textarea>
+                        </div>
+                        <button class="btn btn-success" onclick="saveAutoMode()">Save Auto Mode</button>
+                    </div>
+                </div>
             </div>
             
             <div class="card">
-                <h2>🎮 Controls</h2>
-                <button class="btn btn-warning" onclick="toggleYolo()">Toggle YOLO Mode</button>
-                <button class="btn btn-danger" onclick="clearHistory()">Clear History</button>
-                <button class="btn btn-primary" onclick="resetSession()">Reset Session</button>
-                <button class="btn btn-success" onclick="startWebServer()">Start Web Server</button>
-                <button class="btn btn-danger" onclick="stopWebServer()">Stop Web Server</button>
+                <div class="section-header" onclick="toggleSection('history-section')">
+                    <h2>📝 Recent History</h2>
+                    <button class="section-toggle" id="history-toggle">−</button>
+                </div>
+                <div id="history-section" class="section-content expanded">
+                    <div id="history" class="history"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="section-header" onclick="toggleSection('controls-section')">
+                    <h2>🎮 Controls</h2>
+                    <button class="section-toggle" id="controls-toggle">−</button>
+                </div>
+                <div id="controls-section" class="section-content expanded">
+                    <button class="btn btn-warning" onclick="toggleYolo()">Toggle YOLO Mode</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">Clear History</button>
+                    <button class="btn btn-primary" onclick="resetSession()">Reset Session</button>
+                    <button class="btn btn-success" onclick="startWebServer()">Start Web Server</button>
+                    <button class="btn btn-danger" onclick="stopWebServer()">Stop Web Server</button>
+                </div>
             </div>
         </div>
         
         <div class="grid">
             <div class="card">
-                <h2>🗄️ Database Overview</h2>
-                <div id="database-stats"></div>
-                <button class="btn btn-primary" onclick="loadDatabaseStats()">Refresh Stats</button>
+                <div class="section-header" onclick="toggleSection('database-section')">
+                    <h2>🗄️ Database Overview</h2>
+                    <button class="section-toggle" id="database-toggle">−</button>
+                </div>
+                <div id="database-section" class="section-content expanded">
+                    <div id="database-stats"></div>
+                    <button class="btn btn-primary" onclick="loadDatabaseStats()">Refresh Stats</button>
+                </div>
             </div>
             
             <div class="card">
-                <h2>📁 Indexed Files</h2>
-                <div id="indexed-files"></div>
-                <button class="btn btn-success" onclick="loadIndexedFiles()">Refresh Files</button>
-                <button class="btn btn-warning" onclick="indexCurrentDirectory()">Index Current Directory</button>
+                <div class="section-header" onclick="toggleSection('files-section')">
+                    <h2>📁 Indexed Files</h2>
+                    <button class="section-toggle" id="files-toggle">−</button>
+                </div>
+                <div id="files-section" class="section-content expanded">
+                    <div id="indexed-files"></div>
+                    <button class="btn btn-success" onclick="loadIndexedFiles()">Refresh Files</button>
+                    <button class="btn btn-warning" onclick="indexCurrentDirectory()">Index Current Directory</button>
+                </div>
             </div>
         </div>
         
         <div class="grid">
             <div class="card">
-                <h2>🔍 Code Analysis</h2>
-                <div id="analyze-controls">
-                    <div class="form-group">
-                        <label>Analysis Path:</label>
-                        <input type="text" id="analyzePath" placeholder="Current directory or specific path">
-                    </div>
-                    <button class="btn btn-primary" onclick="analyzeFiles()">Analyze Files</button>
-                    <button class="btn btn-success" onclick="listRecommendations()">List Recommendations</button>
+                <div class="section-header" onclick="toggleSection('analyze-section')">
+                    <h2>🔍 Code Analysis</h2>
+                    <button class="section-toggle" id="analyze-toggle">−</button>
                 </div>
-                <div id="analyze-results"></div>
+                <div id="analyze-section" class="section-content expanded">
+                    <div id="analyze-controls">
+                        <div class="form-group">
+                            <label>Analysis Path:</label>
+                            <input type="text" id="analyzePath" placeholder="Current directory or specific path">
+                        </div>
+                        <button class="btn btn-primary" onclick="analyzeFiles()">Analyze Files</button>
+                        <button class="btn btn-success" onclick="listRecommendations()">List Recommendations</button>
+                    </div>
+                    <div id="analyze-results"></div>
+                </div>
             </div>
             
             <div class="card">
-                <h2>📋 Analysis Recommendations</h2>
-                <div id="recommendations-list"></div>
-                <div id="recommendation-preview"></div>
+                <div class="section-header" onclick="toggleSection('recommendations-section')">
+                    <h2>📋 Analysis Recommendations</h2>
+                    <button class="section-toggle" id="recommendations-toggle">−</button>
+                </div>
+                <div id="recommendations-section" class="section-content expanded">
+                    <div id="recommendations-list"></div>
+                    <div id="recommendation-preview"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -792,17 +1031,67 @@ class WebServer {
         
         function updateStatus(data) {
             const statusDiv = document.getElementById('status');
+            
+            // Update connection status in navbar
+            const statusIcon = document.getElementById('status-icon');
+            const statusText = document.getElementById('status-text');
+            const connectionStatus = document.getElementById('connection-status');
+            
+            if (data.isRunning) {
+                statusIcon.textContent = '🟢';
+                statusText.textContent = 'Online';
+                connectionStatus.className = 'status-indicator status-online';
+            } else {
+                statusIcon.textContent = '🔴';
+                statusText.textContent = 'Offline';
+                connectionStatus.className = 'status-indicator status-offline';
+            }
+            
+            // Update mode indicators
+            const modeIndicators = document.getElementById('mode-indicators');
+            let modeHtml = '';
+            if (data.yoloMode) {
+                modeHtml += '<span class="mode-indicator yolo">YOLO</span>';
+            }
+            if (data.settings.autoMode) {
+                modeHtml += '<span class="mode-indicator auto-mode">AUTO</span>';
+            }
+            if (data.settings.autocodeMode) {
+                modeHtml += '<span class="mode-indicator autocode-mode">AUTOCODE</span>';
+            }
+            modeIndicators.innerHTML = modeHtml;
+            
+            // Enhanced status display
             statusDiv.innerHTML = \`
                 <div class="status">
-                    <strong>Agent:</strong> \${data.agentName} v\${data.version}<br>
-                    <strong>Status:</strong> \${data.isRunning ? '🟢 Running' : '🔴 Stopped'}<br>
-                    <strong>Port:</strong> \${data.port}<br>
-                    <strong>Directory:</strong> \${data.currentDirectory}<br>
-                    <strong>Messages:</strong> \${data.sessionStats.totalMessages}<br>
-                    <strong>Duration:</strong> \${data.sessionStats.sessionDuration}s
+                    <h3>System Status</h3>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <h4>Agent</h4>
+                            <p>\${data.agentName} v\${data.version}</p>
+                        </div>
+                        <div class="status-item">
+                            <h4>Status</h4>
+                            <p>\${data.isRunning ? '🟢 Running' : '🔴 Stopped'}</p>
+                        </div>
+                        <div class="status-item">
+                            <h4>Port</h4>
+                            <p>\${data.port}</p>
+                        </div>
+                        <div class="status-item">
+                            <h4>Directory</h4>
+                            <p>\${data.currentDirectory}</p>
+                        </div>
+                        <div class="status-item">
+                            <h4>Messages</h4>
+                            <p>\${data.sessionStats.totalMessages}</p>
+                        </div>
+                        <div class="status-item">
+                            <h4>Duration</h4>
+                            <p>\${data.sessionStats.sessionDuration}s</p>
+                        </div>
+                    </div>
                 </div>
-                \${data.yoloMode ? '<div class="yolo">⚠️ YOLO MODE ENABLED ⚠️</div>' : ''}
-                \${data.settings.autoMode ? '<div class="auto-mode">🤖 AUTO MODE ENABLED</div>' : ''}
             \`;
             
             updateSettingsForm(data.settings);
@@ -912,11 +1201,21 @@ class WebServer {
         function loadHistory() {
             fetch('/api/history').then(r => r.json()).then(data => {
                 const historyDiv = document.getElementById('history');
-                historyDiv.innerHTML = data.map(item => \`
-                    <div class="history-item \${item.type}">
-                        <strong>\${item.type}:</strong> \${item.content.substring(0, 100)}\${item.content.length > 100 ? '...' : ''}
-                    </div>
-                \`).join('');
+                historyDiv.innerHTML = data.map(item => {
+                    const timestamp = new Date(item.timestamp).toLocaleString();
+                    const content = item.content.length > 150 ? 
+                        item.content.substring(0, 150) + '...' : 
+                        item.content;
+                    
+                    return \`
+                        <div class="history-item \${item.type}">
+                            <div class="timestamp">\${timestamp}</div>
+                            <div class="content">
+                                <strong>\${item.type.toUpperCase()}:</strong> \${content}
+                            </div>
+                        </div>
+                    \`;
+                }).join('');
             });
         }
         
@@ -927,27 +1226,29 @@ class WebServer {
                     const modalStats = data.modalStats;
                     const dbStats = data.databaseStats;
                     
-                    let html = '<div class="status">';
-                    html += '<strong>Modal Database:</strong><br>';
-                    html += \`Indexed Files: \${modalStats.indexedFiles || 0}<br>\`;
-                    html += \`Total Prompts: \${modalStats.totalPrompts || 0}<br>\`;
-                    html += \`Recent Prompts: \${modalStats.recentPrompts || 0}<br>\`;
-                    html += \`Database Size: \${((modalStats.databaseSize || 0) / 1024).toFixed(2)} KB<br>\`;
+                    let html = '<div class="status">📊 Database Statistics</div>';
                     
-                    if (dbStats) {
-                        html += '<br><strong>SQLite Database:</strong><br>';
-                        html += \`Conversations: \${dbStats.conversations_count || 0}<br>\`;
-                        html += \`Sessions: \${dbStats.sessions_count || 0}<br>\`;
-                        html += \`Settings: \${dbStats.settings_count || 0}<br>\`;
-                        html += \`Indexed Files: \${dbStats.indexed_files_count || 0}<br>\`;
-                        html += \`Search History: \${dbStats.search_history_count || 0}<br>\`;
-                        html += \`Auto Mode Logs: \${dbStats.auto_mode_logs_count || 0}<br>\`;
-                        html += \`Web Server Logs: \${dbStats.web_server_logs_count || 0}<br>\`;
-                        html += \`Recent Conversations (24h): \${dbStats.recent_conversations_24h || 0}<br>\`;
-                        html += \`Database Size: \${((dbStats.database_size_bytes || 0) / 1024).toFixed(2)} KB\`;
+                    if (modalStats) {
+                        html += '<div class="status">Modal Database:</div>';
+                        html += '<div class="stats-grid">';
+                        html += \`<div class="stat-item"><div class="stat-number">\${modalStats.indexedFiles || 0}</div><div class="stat-label">Files</div></div>\`;
+                        html += \`<div class="stat-item"><div class="stat-number">\${modalStats.totalPrompts || 0}</div><div class="stat-label">Prompts</div></div>\`;
+                        html += \`<div class="stat-item"><div class="stat-number">\${modalStats.recentPrompts || 0}</div><div class="stat-label">Recent</div></div>\`;
+                        html += \`<div class="stat-item"><div class="stat-number">\${((modalStats.databaseSize || 0) / 1024).toFixed(1)}</div><div class="stat-label">KB</div></div>\`;
+                        html += '</div>';
                     }
                     
-                    html += '</div>';
+                    if (dbStats) {
+                        html += '<div class="status">SQLite Database:</div>';
+                        html += '<div class="stats-grid">';
+                        html += \`<div class="stat-item"><div class="stat-number">\${dbStats.conversations_count || 0}</div><div class="stat-label">Conversations</div></div>\`;
+                        html += \`<div class="stat-item"><div class="stat-number">\${dbStats.sessions_count || 0}</div><div class="stat-label">Sessions</div></div>\`;
+                        html += \`<div class="stat-item"><div class="stat-number">\${dbStats.indexed_files_count || 0}</div><div class="stat-label">Files</div></div>\`;
+                        html += \`<div class="stat-item"><div class="stat-number">\${dbStats.recent_conversations_24h || 0}</div><div class="stat-label">24h</div></div>\`;
+                        html += \`<div class="stat-item"><div class="stat-number">\${((dbStats.database_size_bytes || 0) / 1024).toFixed(1)}</div><div class="stat-label">KB</div></div>\`;
+                        html += '</div>';
+                    }
+                    
                     statsDiv.innerHTML = html;
                 }
             }).catch(error => {
@@ -966,21 +1267,24 @@ class WebServer {
                         return;
                     }
                     
-                    let html = '<div class="status">';
-                    html += \`<strong>Total Indexed Files: \${files.length}</strong><br><br>\`;
+                    let html = '<div class="status">📁 Indexed Files</div>';
+                    html += \`<div class="status">Total: \${files.length} files</div>\`;
+                    html += '<div class="file-list">';
                     
-                    files.slice(0, 10).forEach(file => {
-                        const size = (file.size / 1024).toFixed(2);
+                    files.slice(0, 15).forEach(file => {
+                        const size = (file.size / 1024).toFixed(1);
                         const date = new Date(file.lastAccessed).toLocaleDateString();
-                        html += \`<div style="margin: 5px 0; padding: 5px; border-left: 3px solid #2196F3;">\`;
-                        html += \`<strong>\${file.name}</strong> (\${file.language || 'Unknown'})<br>\`;
-                        html += \`Size: \${size} KB | Lines: \${file.lines} | Modified: \${date}<br>\`;
+                        html += \`<div class="file-item">\`;
+                        html += \`<div>\`;
+                        html += \`<div class="file-name">\${file.name}</div>\`;
                         html += \`<small style="color: #888;">\${file.path}</small>\`;
+                        html += \`</div>\`;
+                        html += \`<div class="file-size">\${size} KB | \${file.lines} lines | \${date}</div>\`;
                         html += '</div>';
                     });
                     
-                    if (files.length > 10) {
-                        html += \`<br><em>... and \${files.length - 10} more files</em>\`;
+                    if (files.length > 15) {
+                        html += \`<div class="file-item" style="text-align: center; color: #888; font-style: italic;">... and \${files.length - 15} more files</div>\`;
                     }
                     
                     html += '</div>';
@@ -1108,6 +1412,28 @@ class WebServer {
                 });
             }
         }
+        
+        // Collapsible section functionality
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const toggle = document.getElementById(sectionId.replace('-section', '-toggle'));
+            
+            if (section.classList.contains('expanded')) {
+                section.classList.remove('expanded');
+                section.classList.add('collapsed');
+                toggle.textContent = '+';
+            } else {
+                section.classList.remove('collapsed');
+                section.classList.add('expanded');
+                toggle.textContent = '−';
+            }
+        }
+        
+        // Initialize the dashboard
+        loadStatus();
+        loadHistory();
+        loadDatabaseStats();
+        loadIndexedFiles();
     </script>
 </body>
 </html>
