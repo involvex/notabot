@@ -93,6 +93,248 @@ class YoloMode {
   }
 }
 
+class AutoCodeMode {
+  constructor(agent) {
+    this.agent = agent;
+    this.enabled = false;
+    this.context = '';
+    this.fileChanges = new Map();
+    this.backupFiles = new Map();
+  }
+
+  enable() {
+    this.enabled = true;
+    console.log(`${colors.blue}🤖 AUTOCODE MODE ENABLED${colors.reset}`);
+    console.log(`${colors.cyan}I will automatically generate and apply code changes based on your requests!${colors.reset}`);
+    console.log(`${colors.green}💡 Just describe what you want to do, and I'll implement it for you.${colors.reset}`);
+  }
+
+  disable() {
+    this.enabled = false;
+    this.context = '';
+    this.fileChanges.clear();
+    this.backupFiles.clear();
+    console.log(`${colors.green}✅ AUTOCODE MODE DISABLED - Back to normal interaction mode.${colors.reset}`);
+  }
+
+  isEnabled() {
+    return this.enabled;
+  }
+
+  async processRequest(userRequest) {
+    if (!this.enabled) {
+      return false;
+    }
+
+    try {
+      console.log(`${colors.blue}🤖 Processing your request in AutoCode mode...${colors.reset}`);
+      
+      // Analyze the current project structure
+      const projectFiles = await this.analyzeProjectStructure();
+      
+      // Generate code changes based on user request
+      const changes = await this.generateCodeChanges(userRequest, projectFiles);
+      
+      // Apply the changes
+      await this.applyChanges(changes);
+      
+      console.log(`${colors.green}✅ AutoCode changes applied successfully!${colors.reset}`);
+      return true;
+      
+    } catch (error) {
+      console.log(`${colors.red}❌ AutoCode error: ${error.message}${colors.reset}`);
+      return false;
+    }
+  }
+
+  async analyzeProjectStructure() {
+    const files = [];
+    const extensions = ['.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.cpp', '.c', '.cs', '.php', '.rb', '.go', '.rs', '.swift', '.kt'];
+    
+    function scanDirectory(dir) {
+      try {
+        const items = fs.readdirSync(dir);
+        for (const item of items) {
+          const fullPath = path.join(dir, item);
+          const stat = fs.statSync(fullPath);
+          
+          if (stat.isDirectory()) {
+            if (!item.startsWith('.') && item !== 'node_modules' && item !== 'dist' && item !== 'build') {
+              scanDirectory(fullPath);
+            }
+          } else if (extensions.includes(path.extname(item))) {
+            files.push({
+              path: fullPath,
+              name: item,
+              size: stat.size,
+              modified: stat.mtime
+            });
+          }
+        }
+      } catch (error) {
+        // Skip directories we can't read
+      }
+    }
+    
+    scanDirectory(this.agent.currentDirectory);
+    return files;
+  }
+
+  async generateCodeChanges(userRequest, projectFiles) {
+    const prompt = `You are an expert programmer. The user has requested: "${userRequest}"
+
+Current project structure:
+${projectFiles.map(f => `- ${f.path} (${f.size} bytes, modified: ${f.modified})`).join('\n')}
+
+Please generate specific code changes to implement this request. Provide your response in this exact format:
+
+ANALYSIS:
+[Your analysis of what needs to be done]
+
+CHANGES:
+1. [File path] - [Description of change]
+2. [File path] - [Description of change]
+3. [File path] - [Description of change]
+
+CODE_CHANGES:
+\`\`\`[language]
+[File path]
+[Complete new or modified code for this file]
+\`\`\`
+
+\`\`\`[language]
+[File path]
+[Complete new or modified code for this file]
+\`\`\`
+
+Focus on:
+- Implementing the user's request accurately
+- Following best practices
+- Maintaining code quality
+- Adding necessary imports and dependencies
+- Creating new files if needed
+- Modifying existing files appropriately
+
+Be specific and provide complete, working code.`;
+
+    const response = await this.agent.geminiAPI.generateResponse(prompt);
+    return this.parseCodeChanges(response);
+  }
+
+  parseCodeChanges(response) {
+    const changes = [];
+    
+    // Extract code changes section
+    const codeChangesMatch = response.match(/CODE_CHANGES:\s*```[\s\S]*?```/);
+    if (!codeChangesMatch) {
+      throw new Error('No code changes found in response');
+    }
+    
+    const codeChangesText = codeChangesMatch[0].replace(/CODE_CHANGES:\s*```[\s\S]*?\n/, '').replace(/```$/, '');
+    
+    // Parse individual file changes
+    const fileBlocks = codeChangesText.split('```').filter(block => block.trim());
+    
+    for (let i = 0; i < fileBlocks.length; i += 2) {
+      if (i + 1 < fileBlocks.length) {
+        const language = fileBlocks[i].trim();
+        const codeBlock = fileBlocks[i + 1].trim();
+        
+        // Extract file path from first line
+        const lines = codeBlock.split('\n');
+        const filePath = lines[0].trim();
+        const code = lines.slice(1).join('\n');
+        
+        changes.push({
+          filePath: filePath,
+          language: language,
+          code: code,
+          isNew: !fs.existsSync(filePath)
+        });
+      }
+    }
+    
+    return changes;
+  }
+
+  async applyChanges(changes) {
+    for (const change of changes) {
+      try {
+        // Create backup if file exists
+        if (!change.isNew && fs.existsSync(change.filePath)) {
+          const backupPath = `${change.filePath}.autocode.backup.${Date.now()}`;
+          fs.writeFileSync(backupPath, fs.readFileSync(change.filePath, 'utf8'));
+          this.backupFiles.set(change.filePath, backupPath);
+          console.log(`${colors.yellow}📦 Backup created: ${backupPath}${colors.reset}`);
+        }
+        
+        // Ensure directory exists
+        const dir = path.dirname(change.filePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        
+        // Write the file
+        fs.writeFileSync(change.filePath, change.code);
+        console.log(`${colors.green}✅ ${change.isNew ? 'Created' : 'Modified'}: ${change.filePath}${colors.reset}`);
+        
+        this.fileChanges.set(change.filePath, {
+          action: change.isNew ? 'created' : 'modified',
+          timestamp: Date.now()
+        });
+        
+      } catch (error) {
+        console.log(`${colors.red}❌ Error applying change to ${change.filePath}: ${error.message}${colors.reset}`);
+      }
+    }
+  }
+
+  getChanges() {
+    return Array.from(this.fileChanges.entries()).map(([filePath, info]) => ({
+      filePath,
+      action: info.action,
+      timestamp: new Date(info.timestamp).toLocaleString()
+    }));
+  }
+
+  getBackups() {
+    return Array.from(this.backupFiles.entries()).map(([filePath, backupPath]) => ({
+      filePath,
+      backupPath
+    }));
+  }
+
+  async revertChanges() {
+    console.log(`${colors.yellow}🔄 Reverting AutoCode changes...${colors.reset}`);
+    
+    for (const [filePath, backupPath] of this.backupFiles) {
+      try {
+        fs.writeFileSync(filePath, fs.readFileSync(backupPath, 'utf8'));
+        fs.unlinkSync(backupPath);
+        console.log(`${colors.green}✅ Reverted: ${filePath}${colors.reset}`);
+      } catch (error) {
+        console.log(`${colors.red}❌ Error reverting ${filePath}: ${error.message}${colors.reset}`);
+      }
+    }
+    
+    // Remove newly created files
+    for (const [filePath, info] of this.fileChanges) {
+      if (info.action === 'created' && fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+          console.log(`${colors.green}🗑️  Removed: ${filePath}${colors.reset}`);
+        } catch (error) {
+          console.log(`${colors.red}❌ Error removing ${filePath}: ${error.message}${colors.reset}`);
+        }
+      }
+    }
+    
+    this.fileChanges.clear();
+    this.backupFiles.clear();
+    console.log(`${colors.green}✅ All AutoCode changes reverted!${colors.reset}`);
+  }
+}
+
 // Web Server with Live Info
 class WebServer {
   constructor(agent) {
@@ -1603,6 +1845,7 @@ class NotABotAgent {
     this.history = new EnhancedHistoryManager();
     this.geminiAPI = new GeminiAPI(this.settings.get('apiKey'));
     this.yoloMode = new YoloMode();
+    this.autoCodeMode = new AutoCodeMode(this);
     this.webServer = new WebServer(this);
     this.oauthAuth = new OAuthAuthenticator();
     this.autocomplete = new AutocompleteManager();
@@ -1860,6 +2103,10 @@ class NotABotAgent {
         this.handleDatabase(args);
         break;
       
+      case 'autocode':
+        await this.handleAutoCode(args);
+        break;
+      
       default:
         console.log(`${colors.red}Unknown command: /${cmd}${colors.reset}`);
         console.log(`Type /help for available commands`);
@@ -1877,6 +2124,14 @@ class NotABotAgent {
     if (message.startsWith('@')) {
       await this.handleToolCall(message);
       return;
+    }
+
+    // Check if AutoCode mode is enabled
+    if (this.autoCodeMode.isEnabled()) {
+      const processed = await this.autoCodeMode.processRequest(message);
+      if (processed) {
+        return; // AutoCode handled the request
+      }
     }
 
     // Generate response using Gemini API
@@ -2540,6 +2795,63 @@ class NotABotAgent {
     }
   }
 
+  async handleAutoCode(args) {
+    const subCommand = args[0] || 'status';
+    
+    switch (subCommand) {
+      case 'enable':
+        this.autoCodeMode.enable();
+        break;
+        
+      case 'disable':
+        this.autoCodeMode.disable();
+        break;
+        
+      case 'status':
+        console.log(`${colors.blue}🤖 AutoCode Mode Status:${colors.reset}`);
+        console.log(`   Enabled: ${this.autoCodeMode.isEnabled() ? 'Yes' : 'No'}`);
+        if (this.autoCodeMode.isEnabled()) {
+          const changes = this.autoCodeMode.getChanges();
+          const backups = this.autoCodeMode.getBackups();
+          console.log(`   Changes made: ${changes.length}`);
+          console.log(`   Backups created: ${backups.length}`);
+        }
+        break;
+        
+      case 'changes':
+        const changes = this.autoCodeMode.getChanges();
+        if (changes.length === 0) {
+          console.log(`${colors.yellow}No AutoCode changes found.${colors.reset}`);
+        } else {
+          console.log(`${colors.blue}📋 AutoCode Changes:${colors.reset}`);
+          changes.forEach((change, index) => {
+            console.log(`   ${index + 1}. ${change.filePath} (${change.action}) - ${change.timestamp}`);
+          });
+        }
+        break;
+        
+      case 'backups':
+        const backups = this.autoCodeMode.getBackups();
+        if (backups.length === 0) {
+          console.log(`${colors.yellow}No AutoCode backups found.${colors.reset}`);
+        } else {
+          console.log(`${colors.blue}📦 AutoCode Backups:${colors.reset}`);
+          backups.forEach((backup, index) => {
+            console.log(`   ${index + 1}. ${backup.filePath} -> ${backup.backupPath}`);
+          });
+        }
+        break;
+        
+      case 'revert':
+        await this.autoCodeMode.revertChanges();
+        break;
+        
+      default:
+        console.log(`${colors.yellow}Usage: /autocode [enable|disable|status|changes|backups|revert]${colors.reset}`);
+        console.log(`${colors.cyan}When enabled, just describe what you want to do and I'll implement it!${colors.reset}`);
+    }
+  }
+
   showHelp() {
     console.log(`${colors.bright}Available Commands:${colors.reset}`);
     console.log(`  /help       - Show this help message`);
@@ -2567,6 +2879,7 @@ class NotABotAgent {
     console.log(`  /stats      - Show modal database statistics`);
     console.log(`  /cleanup    - Clean up old data`);
     console.log(`  /auto       - Control auto mode`);
+    console.log(`  /autocode   - Control AutoCode mode (like Gemini CLI)`);
     console.log(`  /db         - Database management`);
     console.log(``);
     console.log(`${colors.bright}Tool Usage:${colors.reset}`);
