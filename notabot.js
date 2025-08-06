@@ -171,6 +171,104 @@ class WebServer {
         }
       });
 
+      app.post('/api/analyze-files', express.json(), (req, res) => {
+        try {
+          const { path } = req.body;
+          const analyzePath = path || this.agent.currentDirectory;
+          
+          // Start analysis in background
+          this.agent.analyzeFiles([analyzePath]).then(() => {
+            res.json({ success: true, filesAnalyzed: Object.keys(this.agent.analysisRecommendations || {}).length });
+          }).catch(error => {
+            res.status(500).json({ success: false, error: error.message });
+          });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      app.get('/api/analyze-recommendations', (req, res) => {
+        try {
+          const recommendations = [];
+          if (this.agent.analysisRecommendations) {
+            Object.entries(this.agent.analysisRecommendations).forEach(([filePath, data]) => {
+              recommendations.push({
+                filename: path.basename(filePath),
+                path: filePath,
+                timestamp: data.timestamp
+              });
+            });
+          }
+          res.json({ success: true, recommendations });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      app.get('/api/analyze-preview/:index', (req, res) => {
+        try {
+          const index = parseInt(req.params.index);
+          const filePaths = Object.keys(this.agent.analysisRecommendations || {});
+          
+          if (index < 0 || index >= filePaths.length) {
+            return res.status(400).json({ success: false, error: 'Invalid index' });
+          }
+          
+          const filePath = filePaths[index];
+          const data = this.agent.analysisRecommendations[filePath];
+          
+          // Extract improved code from analysis
+          const improvedCodeMatch = data.analysis.match(/IMPROVED_CODE:\s*```[\s\S]*?```/);
+          const improvedCode = improvedCodeMatch ? 
+            improvedCodeMatch[0].replace(/IMPROVED_CODE:\s*```[\s\S]*?\n/, '').replace(/```$/, '') : 
+            'No improved code found';
+          
+          res.json({
+            success: true,
+            analysis: data.analysis,
+            improvedCode: improvedCode
+          });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
+      app.post('/api/analyze-apply/:index', express.json(), (req, res) => {
+        try {
+          const index = parseInt(req.params.index);
+          const filePaths = Object.keys(this.agent.analysisRecommendations || {});
+          
+          if (index < 0 || index >= filePaths.length) {
+            return res.status(400).json({ success: false, error: 'Invalid index' });
+          }
+          
+          const filePath = filePaths[index];
+          const data = this.agent.analysisRecommendations[filePath];
+          
+          // Extract improved code from analysis
+          const improvedCodeMatch = data.analysis.match(/IMPROVED_CODE:\s*```[\s\S]*?```/);
+          if (!improvedCodeMatch) {
+            return res.status(400).json({ success: false, error: 'No improved code found in analysis' });
+          }
+          
+          const improvedCode = improvedCodeMatch[0].replace(/IMPROVED_CODE:\s*```[\s\S]*?\n/, '').replace(/```$/, '');
+          
+          // Create backup
+          const backupPath = `${filePath}.backup.${Date.now()}`;
+          fs.writeFileSync(backupPath, data.originalContent);
+          
+          // Apply changes
+          fs.writeFileSync(filePath, improvedCode);
+          
+          // Remove from recommendations
+          delete this.agent.analysisRecommendations[filePath];
+          
+          res.json({ success: true, message: 'Recommendation applied successfully' });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+
       // Settings management routes
       app.post('/api/settings', express.json(), (req, res) => {
         try {
@@ -419,6 +517,27 @@ class WebServer {
                 <button class="btn btn-warning" onclick="indexCurrentDirectory()">Index Current Directory</button>
             </div>
         </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>🔍 Code Analysis</h2>
+                <div id="analyze-controls">
+                    <div class="form-group">
+                        <label>Analysis Path:</label>
+                        <input type="text" id="analyzePath" placeholder="Current directory or specific path">
+                    </div>
+                    <button class="btn btn-primary" onclick="analyzeFiles()">Analyze Files</button>
+                    <button class="btn btn-success" onclick="listRecommendations()">List Recommendations</button>
+                </div>
+                <div id="analyze-results"></div>
+            </div>
+            
+            <div class="card">
+                <h2>📋 Analysis Recommendations</h2>
+                <div id="recommendations-list"></div>
+                <div id="recommendation-preview"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -537,18 +656,27 @@ class WebServer {
         
         // Load initial data
         fetch('/api/status').then(r => r.json()).then(updateStatus);
-        fetch('/api/history').then(r => r.json()).then(data => {
-            const historyDiv = document.getElementById('history');
-            historyDiv.innerHTML = data.map(item => \`
-                <div class="history-item \${item.type}">
-                    <strong>\${item.type}:</strong> \${item.content.substring(0, 100)}\${item.content.length > 100 ? '...' : ''}
-                </div>
-            \`).join('');
-        });
+        loadHistory();
         
         // Load database data
         loadDatabaseStats();
         loadIndexedFiles();
+        
+        // Set up real-time history updates
+        socket.on('history-update', (data) => {
+            loadHistory();
+        });
+        
+        function loadHistory() {
+            fetch('/api/history').then(r => r.json()).then(data => {
+                const historyDiv = document.getElementById('history');
+                historyDiv.innerHTML = data.map(item => \`
+                    <div class="history-item \${item.type}">
+                        <strong>\${item.type}:</strong> \${item.content.substring(0, 100)}\${item.content.length > 100 ? '...' : ''}
+                    </div>
+                \`).join('');
+            });
+        }
         
         function loadDatabaseStats() {
             fetch('/api/database-stats').then(r => r.json()).then(data => {
@@ -645,6 +773,98 @@ class WebServer {
                 button.textContent = originalText;
                 button.disabled = false;
             });
+        }
+        
+        function analyzeFiles() {
+            const path = document.getElementById('analyzePath').value || '';
+            const resultsDiv = document.getElementById('analyze-results');
+            resultsDiv.innerHTML = '<div class="status">🔍 Analyzing files...</div>';
+            
+            fetch('/api/analyze-files', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    resultsDiv.innerHTML = \`<div class="status">✅ Analysis completed! Found \${data.filesAnalyzed} files.</div>\`;
+                    loadRecommendations();
+                } else {
+                    resultsDiv.innerHTML = \`<div class="status error">❌ Analysis failed: \${data.error}</div>\`;
+                }
+            }).catch(error => {
+                resultsDiv.innerHTML = \`<div class="status error">❌ Analysis failed: \${error.message}</div>\`;
+            });
+        }
+        
+        function listRecommendations() {
+            const listDiv = document.getElementById('recommendations-list');
+            listDiv.innerHTML = '<div class="status">📋 Loading recommendations...</div>';
+            
+            fetch('/api/analyze-recommendations').then(r => r.json()).then(data => {
+                if (data.success && data.recommendations.length > 0) {
+                    let html = '<div class="status">📋 Available Recommendations:</div>';
+                    data.recommendations.forEach((rec, index) => {
+                        html += \`
+                            <div class="history-item" style="margin: 10px 0; padding: 10px; border: 1px solid #444;">
+                                <strong>\${index + 1}. \${rec.filename}</strong><br>
+                                <small>Path: \${rec.path}</small><br>
+                                <small>Analyzed: \${new Date(rec.timestamp).toLocaleString()}</small><br>
+                                <button class="btn btn-warning" onclick="previewRecommendation(\${index})">Preview</button>
+                                <button class="btn btn-success" onclick="applyRecommendation(\${index})">Apply</button>
+                            </div>
+                        \`;
+                    });
+                    listDiv.innerHTML = html;
+                } else {
+                    listDiv.innerHTML = '<div class="status">No recommendations available. Run analysis first.</div>';
+                }
+            }).catch(error => {
+                listDiv.innerHTML = \`<div class="status error">❌ Failed to load recommendations: \${error.message}</div>\`;
+            });
+        }
+        
+        function loadRecommendations() {
+            listRecommendations();
+        }
+        
+        function previewRecommendation(index) {
+            const previewDiv = document.getElementById('recommendation-preview');
+            previewDiv.innerHTML = '<div class="status">🔍 Loading preview...</div>';
+            
+            fetch(\`/api/analyze-preview/\${index}\`).then(r => r.json()).then(data => {
+                if (data.success) {
+                    let html = '<div class="status">💡 Recommendation Preview:</div>';
+                    html += '<div style="background: #3d3d3d; padding: 10px; margin: 10px 0; border-radius: 5px;">';
+                    html += '<h4>Analysis:</h4>';
+                    html += '<pre style="white-space: pre-wrap; color: #ccc;">' + data.analysis + '</pre>';
+                    html += '<h4>Improved Code:</h4>';
+                    html += '<pre style="white-space: pre-wrap; color: #4CAF50; background: #2d2d2d; padding: 10px; border-radius: 3px;">' + data.improvedCode + '</pre>';
+                    html += '</div>';
+                    previewDiv.innerHTML = html;
+                } else {
+                    previewDiv.innerHTML = \`<div class="status error">❌ Failed to load preview: \${data.error}</div>\`;
+                }
+            }).catch(error => {
+                previewDiv.innerHTML = \`<div class="status error">❌ Failed to load preview: \${error.message}</div>\`;
+            });
+        }
+        
+        function applyRecommendation(index) {
+            if (confirm('Are you sure you want to apply this recommendation? A backup will be created.')) {
+                fetch(\`/api/analyze-apply/\${index}\`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(r => r.json()).then(data => {
+                    if (data.success) {
+                        alert('✅ Recommendation applied successfully!');
+                        loadRecommendations();
+                    } else {
+                        alert('❌ Failed to apply recommendation: ' + data.error);
+                    }
+                }).catch(error => {
+                    alert('❌ Failed to apply recommendation: ' + error.message);
+                });
+            }
         }
     </script>
 </body>
