@@ -724,6 +724,42 @@ ${code}
 
     return await this.generateResponse(prompt);
   }
+
+  async analyzeCodeWithRecommendations(code, language = 'javascript') {
+    const prompt = `Analyze this ${language} code and provide detailed recommendations with specific code improvements.
+
+Please provide your analysis in this exact format:
+
+ANALYSIS:
+[Your analysis of the code quality, issues, and general observations]
+
+RECOMMENDATIONS:
+1. [Specific recommendation with code example]
+2. [Specific recommendation with code example]
+3. [Specific recommendation with code example]
+
+IMPROVED_CODE:
+\`\`\`${language}
+[Provide the improved version of the code with all recommendations applied]
+\`\`\`
+
+Code to analyze:
+\`\`\`${language}
+${code}
+\`\`\`
+
+Focus on:
+- Code quality improvements
+- Performance optimizations
+- Security enhancements
+- Best practices
+- Bug fixes
+- Readability improvements
+
+Provide specific, actionable recommendations that can be directly applied to the code.`;
+
+    return await this.generateResponse(prompt);
+  }
 }
 
 // Enhanced Settings Manager
@@ -1243,8 +1279,8 @@ class AutoModeManager {
       // Analyze code complexity
       const complexity = this.agent.toolRegistry.calculateComplexity(content);
       
-      // Get AI analysis
-      const analysis = await this.agent.geminiAPI.analyzeCode(content, language);
+      // Get AI analysis with actionable recommendations
+      const analysis = await this.agent.geminiAPI.analyzeCodeWithRecommendations(content, language);
       
       console.log(`${colors.magenta}📊 ${path.basename(filePath)} Analysis:${colors.reset}`);
       console.log(`   Language: ${language}`);
@@ -1263,6 +1299,14 @@ class AutoModeManager {
           timestamp: new Date().toISOString()
         });
       }
+      
+      // Store recommendations for later application
+      this.agent.analysisRecommendations = this.agent.analysisRecommendations || {};
+      this.agent.analysisRecommendations[filePath] = {
+        originalContent: content,
+        analysis: analysis,
+        timestamp: new Date().toISOString()
+      };
       
     } catch (error) {
       console.log(`${colors.red}Error analyzing ${filePath}: ${error.message}${colors.reset}`);
@@ -1979,6 +2023,39 @@ class NotABotAgent {
 
   async handleAnalyzeFiles(args) {
     try {
+      const subCommand = args[0] || 'analyze';
+      
+      switch (subCommand) {
+        case 'analyze':
+          await this.analyzeFiles(args.slice(1));
+          break;
+          
+        case 'apply':
+          await this.applyRecommendations(args.slice(1));
+          break;
+          
+        case 'list':
+          await this.listRecommendations();
+          break;
+          
+        case 'preview':
+          await this.previewRecommendations(args.slice(1));
+          break;
+          
+        default:
+          console.log(`${colors.yellow}Usage: /analyze [analyze|apply|list|preview] [path]${colors.reset}`);
+          console.log(`  analyze - Analyze files and generate recommendations`);
+          console.log(`  apply   - Apply stored recommendations to files`);
+          console.log(`  list    - List available recommendations`);
+          console.log(`  preview - Preview changes before applying`);
+      }
+    } catch (error) {
+      console.log(`${colors.red}Error in analyze command: ${error.message}${colors.reset}`);
+    }
+  }
+
+  async analyzeFiles(args) {
+    try {
       const analyzePath = args[0] || this.currentDirectory;
       console.log(`${colors.blue}🔍 Analyzing files in: ${analyzePath}${colors.reset}`);
       
@@ -2000,6 +2077,9 @@ class NotABotAgent {
       
       console.log(`${colors.green}Found ${codeFiles.length} code files${colors.reset}`);
       
+      // Initialize recommendations storage
+      this.analysisRecommendations = {};
+      
       // Analyze each file
       for (const file of codeFiles.slice(0, 10)) { // Limit to 10 files
         await this.autoMode.analyzeFile(file);
@@ -2009,9 +2089,110 @@ class NotABotAgent {
       await this.autoMode.generateProjectSummary(codeFiles);
       
       console.log(`${colors.green}✅ File analysis completed!${colors.reset}`);
+      console.log(`${colors.blue}💡 Use '/analyze list' to see recommendations or '/analyze apply' to apply them${colors.reset}`);
       
     } catch (error) {
       console.log(`${colors.red}Error analyzing files: ${error.message}${colors.reset}`);
+    }
+  }
+
+  async listRecommendations() {
+    if (!this.analysisRecommendations || Object.keys(this.analysisRecommendations).length === 0) {
+      console.log(`${colors.yellow}No recommendations available. Run '/analyze analyze' first.${colors.reset}`);
+      return;
+    }
+    
+    console.log(`${colors.blue}📋 Available Recommendations:${colors.reset}`);
+    Object.entries(this.analysisRecommendations).forEach(([filePath, data], index) => {
+      console.log(`${colors.cyan}${index + 1}. ${path.basename(filePath)}${colors.reset}`);
+      console.log(`   📁 Path: ${filePath}`);
+      console.log(`   📅 Analyzed: ${new Date(data.timestamp).toLocaleString()}`);
+      console.log(`   📊 Lines: ${data.originalContent.split('\n').length}`);
+      console.log('');
+    });
+    
+    console.log(`${colors.green}💡 Use '/analyze preview [file_number]' to preview changes${colors.reset}`);
+    console.log(`${colors.green}💡 Use '/analyze apply [file_number]' to apply recommendations${colors.reset}`);
+  }
+
+  async previewRecommendations(args) {
+    if (!this.analysisRecommendations || Object.keys(this.analysisRecommendations).length === 0) {
+      console.log(`${colors.yellow}No recommendations available. Run '/analyze analyze' first.${colors.reset}`);
+      return;
+    }
+    
+    const fileIndex = parseInt(args[0]) - 1;
+    const filePaths = Object.keys(this.analysisRecommendations);
+    
+    if (fileIndex < 0 || fileIndex >= filePaths.length) {
+      console.log(`${colors.red}Invalid file number. Use '/analyze list' to see available files.${colors.reset}`);
+      return;
+    }
+    
+    const filePath = filePaths[fileIndex];
+    const data = this.analysisRecommendations[filePath];
+    
+    console.log(`${colors.blue}🔍 Previewing changes for: ${path.basename(filePath)}${colors.reset}`);
+    console.log(`${colors.cyan}Original Analysis:${colors.reset}`);
+    console.log(data.analysis);
+    console.log('');
+    
+    // Extract improved code from analysis
+    const improvedCodeMatch = data.analysis.match(/IMPROVED_CODE:\s*```[\s\S]*?```/);
+    if (improvedCodeMatch) {
+      const improvedCode = improvedCodeMatch[0].replace(/IMPROVED_CODE:\s*```[\s\S]*?\n/, '').replace(/```$/, '');
+      console.log(`${colors.green}💡 Improved Code Preview:${colors.reset}`);
+      console.log(improvedCode);
+      console.log('');
+      console.log(`${colors.yellow}💡 Use '/analyze apply ${fileIndex + 1}' to apply these changes${colors.reset}`);
+    } else {
+      console.log(`${colors.yellow}No improved code found in analysis${colors.reset}`);
+    }
+  }
+
+  async applyRecommendations(args) {
+    if (!this.analysisRecommendations || Object.keys(this.analysisRecommendations).length === 0) {
+      console.log(`${colors.yellow}No recommendations available. Run '/analyze analyze' first.${colors.reset}`);
+      return;
+    }
+    
+    const fileIndex = parseInt(args[0]) - 1;
+    const filePaths = Object.keys(this.analysisRecommendations);
+    
+    if (fileIndex < 0 || fileIndex >= filePaths.length) {
+      console.log(`${colors.red}Invalid file number. Use '/analyze list' to see available files.${colors.reset}`);
+      return;
+    }
+    
+    const filePath = filePaths[fileIndex];
+    const data = this.analysisRecommendations[filePath];
+    
+    console.log(`${colors.blue}🔧 Applying recommendations to: ${path.basename(filePath)}${colors.reset}`);
+    
+    try {
+      // Extract improved code from analysis
+      const improvedCodeMatch = data.analysis.match(/IMPROVED_CODE:\s*```[\s\S]*?```/);
+      if (!improvedCodeMatch) {
+        console.log(`${colors.red}No improved code found in analysis${colors.reset}`);
+        return;
+      }
+      
+      const improvedCode = improvedCodeMatch[0].replace(/IMPROVED_CODE:\s*```[\s\S]*?\n/, '').replace(/```$/, '');
+      
+      // Create backup
+      const backupPath = `${filePath}.backup.${Date.now()}`;
+      fs.writeFileSync(backupPath, data.originalContent);
+      console.log(`${colors.green}✅ Backup created: ${backupPath}${colors.reset}`);
+      
+      // Apply changes
+      fs.writeFileSync(filePath, improvedCode);
+      console.log(`${colors.green}✅ Recommendations applied successfully!${colors.reset}`);
+      
+      // Remove from recommendations
+      delete this.analysisRecommendations[filePath];
+      
+    } catch (error) {
+      console.log(`${colors.red}Error applying recommendations: ${error.message}${colors.reset}`);
     }
   }
 
@@ -2150,7 +2331,7 @@ class NotABotAgent {
     console.log(`  /auth       - Set API key`);
     console.log(`  /debug      - Toggle debug mode`);
     console.log(`  /stats      - Show session statistics`);
-    console.log(`  /analyze    - Analyze code files in directory`);
+    console.log(`  /analyze [analyze|apply|list|preview] - Analyze code and apply recommendations`);
     console.log(`  /windows-index [status|test] - Check Windows index status`);
     console.log(`  /context    - Show current context`);
     console.log(`  /reset      - Reset session`);
