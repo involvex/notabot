@@ -1569,7 +1569,7 @@ class NotABotAgent {
         break;
       
       case 'analyze':
-        this.handleCodeAnalysis(args.join(' '));
+        await this.handleAnalyzeFiles(args);
         break;
       
       case 'context':
